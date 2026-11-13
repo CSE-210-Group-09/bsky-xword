@@ -1,0 +1,6 @@
+# Disposable upstream checkout and local dependencies
+.prototype/
+node_modules/
+.env
+.env.*
+!.env.example

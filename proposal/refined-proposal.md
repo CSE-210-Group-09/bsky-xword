@@ -1,6 +1,6 @@
 # A Bluesky friend leaderboard built on Crosshare
 
-Status: proposed scope for team discussion. This revises the earlier PDF against the three-week constraint, the November 12 discussion, and the intent to build on Crosshare. It does not record team approval.
+Status: accepted working scope for planning and prototyping as of November 12, 2026. This revises the earlier PDF against the three-week constraint, the November 12 discussion, and the intent to build on Crosshare. Implementation tasks are tracked in [docs/tasks.md](../docs/tasks.md).
 
 ## The precise problem
 
@@ -99,4 +99,4 @@ Week 1 must end with a deployed seeded puzzle and a real completed solve publish
 - Verify that an unmodified fork runs and that we can access a trustworthy completion event before sizing UI work. Building on Crosshare saves solver work only if we can integrate with it.
 - Confirm who supplies the initial puzzle set and how much time each teammate actually has. The older PDF's four-week schedule and assumed hours are not commitments.
 
-The scope decision to settle is whether the team wants to test daily play among existing Bluesky follows. If yes, this is a coherent three-week release. If the main interest is instead creator-owned publishing, write a different proposal around publishing and discovery; that requires different records, interfaces, and tasks.
+The accepted working scope tests daily play among existing Bluesky follows. Creator-owned publishing remains outside the MVP. Any change to that focus should revise the proposal and dependent tasks before implementation expands.
