@@ -1,0 +1,22 @@
+{
+  "lexicon": 1,
+  "id": "org.example.bskyxword.result",
+  "description": "DRAFT ONLY. Replace reserved example namespace before publication. Self-reported first completion for an immutable puzzle revision.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "record": {
+        "type": "object",
+        "required": ["puzzleId", "puzzleRevision", "durationMs", "assisted", "completedAt"],
+        "properties": {
+          "puzzleId": {"type": "string", "minLength": 1, "maxLength": 512},
+          "puzzleRevision": {"type": "string", "minLength": 71, "maxLength": 71, "description": "sha256: followed by a lowercase hex digest of the v1 canonical playable content."},
+          "durationMs": {"type": "integer", "minimum": 0},
+          "assisted": {"type": "boolean"},
+          "completedAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

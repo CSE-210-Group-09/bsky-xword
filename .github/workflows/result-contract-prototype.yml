@@ -1,0 +1,19 @@
+name: Result contract prototype
+on:
+  pull_request:
+    paths: ['prototypes/result-contract/**', '.github/workflows/result-contract-prototype.yml']
+  push:
+    branches: [main]
+    paths: ['prototypes/result-contract/**', '.github/workflows/result-contract-prototype.yml']
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test prototypes/result-contract/result.test.mjs
+      - run: node prototypes/result-contract/demo.mjs
