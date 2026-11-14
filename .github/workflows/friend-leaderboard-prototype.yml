@@ -1,0 +1,19 @@
+name: Friend leaderboard prototype
+on:
+  pull_request:
+    paths: ['prototypes/friend-leaderboard/**', '.github/workflows/friend-leaderboard-prototype.yml']
+  push:
+    branches: [main]
+    paths: ['prototypes/friend-leaderboard/**', '.github/workflows/friend-leaderboard-prototype.yml']
+permissions:
+  contents: read
+jobs:
+  friends:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test prototypes/friend-leaderboard/friends.test.mjs
+      - run: node prototypes/friend-leaderboard/demo.mjs
