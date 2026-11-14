@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily mini prototype</title><link rel="stylesheet" href="/style.css">
+<main><header><span>BSKY XWORD / MATTHEW'S PROTOTYPE</span><h1>A little symmetry</h1>
+<p>One 5×5 mini. A few familiar faces.</p></header>
+<p class="notice">Offline demo · Your result stays in this browser. Friends are sample accounts.</p>
+<section class="play"><div><div class="toolbar"><button id="start">Start puzzle</button><output id="timer">0:00</output></div>
+<div id="grid" role="group" aria-label="Crossword grid"></div>
+<button id="check" disabled>Check full board</button><button id="abandon" disabled>Abandon</button>
+<p id="status" role="status">Start when you're ready. The clock continues if you reload.</p></div>
+<div class="clues"><h2>Across</h2><ol id="across"></ol><h2>Down</h2><ol id="down"></ol></div></section>
+<section id="results" hidden><h2>Friends on this mini</h2><p id="result-note"></p><ol id="ranking"></ol>
+<p>Only completed sample results appear. The unrelated sample account is excluded.</p>
+<button id="publish" disabled>Publish to Bluesky · not connected</button>
+<p>Live publishing needs OAuth and an explicit public-result confirmation. It is not implemented in this demo.</p></section>
+<footer>Mechanics fixture based on the ancient Sator word square. Clues include Latin and an unusual proper name.</footer>
+</main><script type="module" src="/app.mjs"></script></html>
