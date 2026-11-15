@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>bsky-xword · direct PDS prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>bsky-xword <span class="tag">prototype</span></h1>
+      <p class="sub">Daily 5×5 mini. The friend leaderboard is read <strong>directly from each friend's PDS</strong>, with no backend.</p>
+    </div>
+    <code class="rev" id="revision">rev …</code>
+  </header>
+
+  <main class="layout">
+    <section class="card puzzle" aria-label="Puzzle">
+      <div class="puzzle-head">
+        <h2 id="puzzle-title">Today's mini</h2>
+        <div class="timer" id="timer">0:00</div>
+      </div>
+      <div class="clue-bar" id="clue-bar">&nbsp;</div>
+      <div class="board-wrap">
+        <div class="board" id="board" role="grid" aria-label="Crossword grid"></div>
+        <div class="overlay" id="overlay">
+          <p id="overlay-text"></p>
+          <button id="overlay-btn" class="primary">Start</button>
+        </div>
+        <input id="kbd" class="kbd" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Type answers">
+      </div>
+      <p class="status" id="status" role="status"></p>
+      <div class="actions">
+        <button id="pause" disabled>Pause</button>
+        <button id="give-up" disabled>Give up</button>
+        <button id="replay" hidden>Practice replay</button>
+      </div>
+      <div class="clues">
+        <div><h3>Across</h3><ol id="clues-across"></ol></div>
+        <div><h3>Down</h3><ol id="clues-down"></ol></div>
+      </div>
+      <p class="muted small">Type to fill · arrows move · Space switches direction · Tab / Enter jumps to the next clue.
+        The board is checked once every square is filled.</p>
+    </section>
+
+    <aside class="side">
+      <section class="card" id="result-card" hidden>
+        <h2>Your result</h2>
+        <p class="big" id="result-summary"></p>
+        <p class="muted" id="result-note"></p>
+        <div class="actions">
+          <button id="publish" class="primary">Publish result</button>
+          <button id="share">Share to Bluesky…</button>
+        </div>
+        <p class="muted small" id="publish-note"></p>
+        <details>
+          <summary>Spoiler-free share text</summary>
+          <pre id="share-preview"></pre>
+        </details>
+        <details>
+          <summary>AT record that would be written to your repo</summary>
+          <pre id="result-json"></pre>
+        </details>
+        <button id="reset" class="link small">Reset my recorded result (dev only)</button>
+      </section>
+
+      <section class="card" aria-label="Friend leaderboard">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tab-demo" aria-selected="true">Demo data</button>
+          <button role="tab" id="tab-live" aria-selected="false">Live Bluesky</button>
+        </div>
+        <div id="panel-demo">
+          <p class="muted small">Fixture accounts. You follow Alice, Bob, Carol, Dan and Erin, but not Mallory.</p>
+        </div>
+        <div id="panel-live" hidden>
+          <form id="live-form" class="live-form">
+            <label class="wide">Bluesky handle
+              <input id="live-actor" placeholder="bsky.app" autocomplete="off" spellcheck="false" required>
+            </label>
+            <label>Max follows to check
+              <input id="live-max" type="number" min="1" max="5000" value="150">
+            </label>
+            <label>Parallel requests
+              <input id="live-conc" type="number" min="1" max="32" value="8">
+            </label>
+            <div class="actions wide">
+              <button class="primary" id="live-run">Load leaderboard</button>
+              <button type="button" id="live-cancel" disabled>Cancel</button>
+            </div>
+          </form>
+          <div class="progress" id="live-progress" hidden><div id="live-bar"></div></div>
+          <table class="metrics" id="live-metrics" hidden></table>
+          <p class="muted small">Public, read-only calls only: AppView <code>getProfile</code> and <code>getFollows</code>,
+            <code>plc.directory</code> for each DID, then <code>com.atproto.repo.getRecord</code> on each friend's own PDS.</p>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="muted small">
+    CSE 210 Group 09 · ranking rules ported from <code>prototype/friend-leaderboard</code> ·
+    record shape and key from <code>prototype/result-contract</code> · <a href="tests.html">run tests</a>
+  </footer>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
