@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { EASY_PUZZLE } from './puzzleData';
-import { INITIAL_FRIENDS, CURRENT_USER } from './mockFriends';
+import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
+import { INITIAL_FRIENDS, CURRENT_USER } from '../lib/atproto/mockFriends';
 
 export default function App() {
   const puzzle = EASY_PUZZLE;
