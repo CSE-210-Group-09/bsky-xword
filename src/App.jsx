@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { EASY_PUZZLE } from './puzzleData';
+import { INITIAL_FRIENDS, CURRENT_USER } from './mockFriends';
 
 export default function App() {
   const puzzle = EASY_PUZZLE;
@@ -14,16 +15,22 @@ export default function App() {
   const [selectedCell, setSelectedCell] = useState({ row: 0, col: 0 });
   const [direction, setDirection] = useState('across'); // 'across' or 'down'
 
-  // Timer & Assistance state
+  // Timer & completion states
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isAssisted, setIsAssisted] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
+  // Active side panel tab: 'clues' or 'leaderboard'
+  const [activeTab, setActiveTab] = useState('clues');
+
+  // Frozen first completion score (purely in-memory, resets on browser refresh)
+  const [userFirstScore, setUserFirstScore] = useState(null);
+
   const gridContainerRef = useRef(null);
 
-  // Timer effect
+  // Timer interval
   useEffect(() => {
     let interval = null;
     if (timerActive && !isCompleted) {
@@ -36,6 +43,7 @@ export default function App() {
 
   // Format seconds to mm:ss
   const formatTime = (totalSeconds) => {
+    if (totalSeconds === null || totalSeconds === undefined) return '--:--';
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -67,22 +75,18 @@ export default function App() {
     [puzzle, size, isBlack]
   );
 
-  // Advance to next cell in current direction
+  // Advance cursor to next white cell in current direction
   const advanceCursor = useCallback(
     (r, c, dir) => {
       let nextR = r;
       let nextC = c;
       if (dir === 'across') {
         nextC += 1;
-        while (nextC < size && isBlack(nextR, nextC)) {
-          nextC += 1;
-        }
+        while (nextC < size && isBlack(nextR, nextC)) nextC += 1;
         if (nextC < size) return { row: nextR, col: nextC };
       } else {
         nextR += 1;
-        while (nextR < size && isBlack(nextR, nextC)) {
-          nextR += 1;
-        }
+        while (nextR < size && isBlack(nextR, nextC)) nextR += 1;
         if (nextR < size) return { row: nextR, col: nextC };
       }
       return { row: r, col: c };
@@ -90,22 +94,18 @@ export default function App() {
     [size, isBlack]
   );
 
-  // Move backward
+  // Retreat cursor backward
   const retreatCursor = useCallback(
     (r, c, dir) => {
       let prevR = r;
       let prevC = c;
       if (dir === 'across') {
         prevC -= 1;
-        while (prevC >= 0 && isBlack(prevR, prevC)) {
-          prevC -= 1;
-        }
+        while (prevC >= 0 && isBlack(prevR, prevC)) prevC -= 1;
         if (prevC >= 0) return { row: prevR, col: prevC };
       } else {
         prevR -= 1;
-        while (prevR >= 0 && isBlack(prevR, prevC)) {
-          prevR -= 1;
-        }
+        while (prevR >= 0 && isBlack(prevR, prevC)) prevR -= 1;
         if (prevR >= 0) return { row: prevR, col: prevC };
       }
       return { row: r, col: c };
@@ -113,11 +113,10 @@ export default function App() {
     [isBlack]
   );
 
-  // Handle cell click
+  // Cell click
   const handleCellClick = (r, c) => {
     if (isBlack(r, c)) return;
     if (selectedCell.row === r && selectedCell.col === c) {
-      // Toggle direction if clicked same cell
       setDirection((prev) => (prev === 'across' ? 'down' : 'across'));
     } else {
       setSelectedCell({ row: r, col: c });
@@ -150,7 +149,7 @@ export default function App() {
 
   const activeClue = getActiveClue();
 
-  // Highlight cells belonging to current clue
+  // Check if cell is in active word
   const isCellInActiveWord = (r, c) => {
     if (!activeClue) return false;
     if (direction === 'across') {
@@ -168,10 +167,9 @@ export default function App() {
     }
   };
 
-  // Global keyboard listener
+  // Keyboard navigation & typing
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't capture if completed modal is open
       if (showModal) return;
 
       const { row, col } = selectedCell;
@@ -203,13 +201,11 @@ export default function App() {
         e.preventDefault();
         const currentLetter = grid[row][col];
         if (currentLetter !== '') {
-          // Clear current letter
           const newGrid = grid.map((rArr, rIdx) =>
             rArr.map((val, cIdx) => (rIdx === row && cIdx === col ? '' : val))
           );
           setGrid(newGrid);
         } else {
-          // Retreat and clear
           const prev = retreatCursor(row, col, direction);
           const newGrid = grid.map((rArr, rIdx) =>
             rArr.map((val, cIdx) => (rIdx === prev.row && cIdx === prev.col ? '' : val))
@@ -229,9 +225,17 @@ export default function App() {
         if (checkCompletion(newGrid)) {
           setIsCompleted(true);
           setTimerActive(false);
+
+          // Freeze first completion time (never overwritten on reattempt)
+          setUserFirstScore((prev) => {
+            if (prev === null) {
+              return secondsElapsed;
+            }
+            return prev;
+          });
+
           setShowModal(true);
         } else {
-          // Advance cursor
           const next = advanceCursor(row, col, direction);
           setSelectedCell(next);
         }
@@ -240,15 +244,16 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedCell, direction, grid, isBlack, size, advanceCursor, retreatCursor, checkCompletion, showModal]);
+  }, [selectedCell, direction, grid, isBlack, size, advanceCursor, retreatCursor, checkCompletion, showModal, secondsElapsed]);
 
   // Clue item click
   const handleClueClick = (clue, dir) => {
+    setActiveTab('clues');
     setDirection(dir);
     setSelectedCell({ row: clue.row, col: clue.col });
   };
 
-  // Test Auto-Fill (to test victory state immediately without typing)
+  // Quick Auto-Fill for testing
   const handleAutoFill = () => {
     const solved = puzzle.solution.map((row) =>
       row.map((cell) => (cell === '#' ? '' : cell))
@@ -257,10 +262,19 @@ export default function App() {
     setIsAssisted(true);
     setIsCompleted(true);
     setTimerActive(false);
+
+    // Freeze first completion score
+    setUserFirstScore((prev) => {
+      if (prev === null) {
+        return secondsElapsed > 0 ? secondsElapsed : 45;
+      }
+      return prev;
+    });
+
     setShowModal(true);
   };
 
-  // Reset grid
+  // Reset grid for a reattempt (does NOT reset userFirstScore)
   const handleReset = () => {
     setGrid(Array(size).fill(null).map(() => Array(size).fill('')));
     setSecondsElapsed(0);
@@ -270,7 +284,45 @@ export default function App() {
     setShowModal(false);
     setSelectedCell({ row: 0, col: 0 });
     setDirection('across');
+    // Note: userFirstScore stays intact for reattempts!
   };
+
+  // Compute the Leaderboard ranking purely by elapsed time
+  const leaderboardData = useMemo(() => {
+    // Current user entry
+    const userEntry = {
+      ...CURRENT_USER,
+      timeSeconds: userFirstScore,
+    };
+
+    // Combine mock friends with current user
+    const all = [...INITIAL_FRIENDS, userEntry];
+
+    // Filter completed (has time) vs uncompleted (null)
+    const completed = all
+      .filter((item) => item.timeSeconds !== null)
+      .sort((a, b) => a.timeSeconds - b.timeSeconds);
+
+    const unranked = all.filter((item) => item.timeSeconds === null);
+
+    // Assign 1-based ranks (purely by time)
+    const ranked = completed.map((item, index) => {
+      // Handle potential ties
+      if (index > 0 && item.timeSeconds === completed[index - 1].timeSeconds) {
+        return { ...item, rank: completed[index - 1].rank };
+      }
+      return { ...item, rank: index + 1 };
+    });
+
+    return { ranked, unranked };
+  }, [userFirstScore]);
+
+  // Find user's current rank
+  const currentUserRank = useMemo(() => {
+    if (userFirstScore === null) return null;
+    const match = leaderboardData.ranked.find((e) => e.isCurrentUser);
+    return match ? match.rank : null;
+  }, [leaderboardData, userFirstScore]);
 
   return (
     <div className="app-container" ref={gridContainerRef}>
@@ -280,7 +332,7 @@ export default function App() {
           <span className="brand-icon">🧩</span>
           <div className="title-group">
             <h1>Bluesky Xword Prototype</h1>
-            <p>5x5 Mini Crossword Spike &bull; Branch: <code>aarons_prototype</code></p>
+            <p>5x5 Mini &bull; Branch: <code>aarons_prototype</code></p>
           </div>
         </div>
 
@@ -290,7 +342,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Active Clue Highlight Bar */}
+      {/* Current Clue Bar */}
       <div className="current-clue-bar">
         {activeClue ? (
           <span>
@@ -301,7 +353,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Crossword Grid & Clues */}
+      {/* Crossword Grid & Side Panel */}
       <main className="puzzle-layout">
         <div className="grid-container">
           <div className="grid">
@@ -336,53 +388,162 @@ export default function App() {
             <button
               className="btn btn-test"
               onClick={handleAutoFill}
-              title="Automatically fills the correct solution to test victory modal"
+              title="Automatically fills the correct solution to test completion and leaderboard"
             >
               ⚡ Quick Fill (Test Solved)
             </button>
           </div>
         </div>
 
-        {/* Clues side column */}
-        <div className="clues-container">
-          <div className="clue-section">
-            <h3>Across</h3>
-            <ul className="clue-list">
-              {puzzle.clues.across.map((clue) => {
-                const isActive =
-                  direction === 'across' && activeClue?.number === clue.number;
-                return (
-                  <li
-                    key={`across-${clue.number}`}
-                    className={`clue-item ${isActive ? 'active' : ''}`}
-                    onClick={() => handleClueClick(clue, 'across')}
-                  >
-                    <span className="clue-number">{clue.number}.</span>
-                    <span>{clue.text}</span>
-                  </li>
-                );
-              })}
-            </ul>
+        {/* Side Panel with Tabs (Clues & Friends Leaderboard) */}
+        <div className="side-panel">
+          <div className="tabs-header">
+            <button
+              className={`tab-btn ${activeTab === 'clues' ? 'active' : ''}`}
+              onClick={() => setActiveTab('clues')}
+            >
+              📝 Clues
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+              onClick={() => setActiveTab('leaderboard')}
+            >
+              👥 Friends Leaderboard
+              {currentUserRank !== null && (
+                <span className="tab-pill">#{currentUserRank}</span>
+              )}
+            </button>
           </div>
 
-          <div className="clue-section">
-            <h3>Down</h3>
-            <ul className="clue-list">
-              {puzzle.clues.down.map((clue) => {
-                const isActive =
-                  direction === 'down' && activeClue?.number === clue.number;
-                return (
-                  <li
-                    key={`down-${clue.number}`}
-                    className={`clue-item ${isActive ? 'active' : ''}`}
-                    onClick={() => handleClueClick(clue, 'down')}
-                  >
-                    <span className="clue-number">{clue.number}.</span>
-                    <span>{clue.text}</span>
-                  </li>
-                );
-              })}
-            </ul>
+          <div className="panel-content">
+            {/* Clues Tab View */}
+            {activeTab === 'clues' && (
+              <>
+                <div className="clue-section">
+                  <h3>Across</h3>
+                  <ul className="clue-list">
+                    {puzzle.clues.across.map((clue) => {
+                      const isActive =
+                        direction === 'across' && activeClue?.number === clue.number;
+                      return (
+                        <li
+                          key={`across-${clue.number}`}
+                          className={`clue-item ${isActive ? 'active' : ''}`}
+                          onClick={() => handleClueClick(clue, 'across')}
+                        >
+                          <span className="clue-number">{clue.number}.</span>
+                          <span>{clue.text}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                <div className="clue-section">
+                  <h3>Down</h3>
+                  <ul className="clue-list">
+                    {puzzle.clues.down.map((clue) => {
+                      const isActive =
+                        direction === 'down' && activeClue?.number === clue.number;
+                      return (
+                        <li
+                          key={`down-${clue.number}`}
+                          className={`clue-item ${isActive ? 'active' : ''}`}
+                          onClick={() => handleClueClick(clue, 'down')}
+                        >
+                          <span className="clue-number">{clue.number}.</span>
+                          <span>{clue.text}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </>
+            )}
+
+            {/* Friends Leaderboard Tab View */}
+            {activeTab === 'leaderboard' && (
+              <div className="leaderboard-view">
+                <div className="leaderboard-meta">
+                  <span>Bluesky Friends &bull; Today's Mini</span>
+                  <span>{leaderboardData.ranked.length} solved</span>
+                </div>
+
+                {userFirstScore !== null && (
+                  <div className="leaderboard-notice">
+                    <span>🏆</span>
+                    <span>
+                      You placed <strong>#{currentUserRank}</strong> with your first completion of{' '}
+                      <strong>{formatTime(userFirstScore)}</strong>!
+                    </span>
+                  </div>
+                )}
+
+                {/* Ranked Solvers */}
+                <ul className="leaderboard-list">
+                  {leaderboardData.ranked.map((friend) => (
+                    <li
+                      key={friend.did}
+                      className={`leaderboard-item ${friend.isCurrentUser ? 'is-current-user' : ''}`}
+                    >
+                      <span className={`leaderboard-rank rank-${friend.rank}`}>
+                        {friend.rank === 1 ? '🥇' : friend.rank === 2 ? '🥈' : friend.rank === 3 ? '🥉' : `#${friend.rank}`}
+                      </span>
+
+                      <div className="user-avatar" style={{ backgroundColor: friend.color }}>
+                        {friend.initials}
+                      </div>
+
+                      <div className="user-details">
+                        <div className="user-name-line">
+                          <span className="user-name">{friend.displayName}</span>
+                          {friend.isCurrentUser && <span className="you-tag">YOU</span>}
+                        </div>
+                        <span className="user-handle">@{friend.handle}</span>
+                      </div>
+
+                      <span className="user-time-pill">{formatTime(friend.timeSeconds)}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Friends yet to solve */}
+                {leaderboardData.unranked.length > 0 && (
+                  <div style={{ marginTop: '8px' }}>
+                    <div className="leaderboard-meta" style={{ marginBottom: '6px' }}>
+                      <span>In Progress / Not Yet Solved</span>
+                    </div>
+                    <ul className="leaderboard-list">
+                      {leaderboardData.unranked.map((friend) => (
+                        <li
+                          key={friend.did}
+                          className={`leaderboard-item ${friend.isCurrentUser ? 'is-current-user' : ''}`}
+                          style={{ opacity: 0.7 }}
+                        >
+                          <span className="leaderboard-rank">-</span>
+
+                          <div className="user-avatar" style={{ backgroundColor: friend.color }}>
+                            {friend.initials}
+                          </div>
+
+                          <div className="user-details">
+                            <div className="user-name-line">
+                              <span className="user-name">{friend.displayName}</span>
+                              {friend.isCurrentUser && <span className="you-tag">YOU</span>}
+                            </div>
+                            <span className="user-handle">@{friend.handle}</span>
+                          </div>
+
+                          <span className="user-time-pill pending">
+                            {friend.isCurrentUser ? 'Solving...' : 'Not played'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -394,25 +555,60 @@ export default function App() {
             <div className="modal-icon">🎉</div>
             <h2 className="modal-title">Puzzle Complete!</h2>
             <p className="modal-subtitle">
-              You completed today's 5x5 test mini crossword!
+              You finished today's mini crossword!
             </p>
 
             <div className="stats-card">
               <div className="stat-item">
-                <span className="stat-label">Final Time</span>
+                <span className="stat-label">Your Time</span>
                 <span className="stat-value">{formatTime(secondsElapsed)}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Status</span>
-                <span className="stat-value" style={{ color: isAssisted ? '#ea580c' : '#16a34a' }}>
-                  {isAssisted ? 'Assisted' : 'Clean'}
+                <span className="stat-label">Friend Rank</span>
+                <span className="stat-value" style={{ color: '#0085ff' }}>
+                  #{currentUserRank}
                 </span>
+              </div>
+            </div>
+
+            {/* Modal Mini Leaderboard */}
+            <div className="modal-leaderboard-card">
+              <div className="modal-lb-title">
+                <span>Friend Leaderboard (Today)</span>
+                <span>Ranked by Time</span>
+              </div>
+
+              <div className="modal-lb-list">
+                {leaderboardData.ranked.map((item) => (
+                  <div
+                    key={item.did}
+                    className={`modal-lb-row ${item.isCurrentUser ? 'highlight-user' : ''}`}
+                  >
+                    <div className="modal-lb-left">
+                      <span className="modal-lb-rank">
+                        {item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : item.rank}
+                      </span>
+                      <span>{item.displayName}</span>
+                      {item.isCurrentUser && <span className="you-tag">YOU</span>}
+                    </div>
+                    <strong>{formatTime(item.timeSeconds)}</strong>
+                  </div>
+                ))}
               </div>
             </div>
 
             <div className="modal-actions">
               <button
                 className="btn btn-primary"
+                onClick={() => {
+                  setShowModal(false);
+                  setActiveTab('leaderboard');
+                }}
+              >
+                View Friends Leaderboard Tab
+              </button>
+              <button
+                className="btn btn-secondary"
                 onClick={() => setShowModal(false)}
               >
                 Inspect Grid
@@ -421,7 +617,7 @@ export default function App() {
                 className="btn btn-secondary"
                 onClick={handleReset}
               >
-                Play Again
+                Play Again (Reattempt)
               </button>
             </div>
           </div>
