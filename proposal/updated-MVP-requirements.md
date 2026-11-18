@@ -1,0 +1,20 @@
+What do we want for our MVP?
+- Single page
+  - The grid
+    - 5x5 mini, changed daily
+  - Clues
+  - Leaderboard
+    - Hidden until puzzle is completed
+    - Shows friends only
+  - Timer
+  - Reveal single square
+    - Unlimited tries
+    - Add a time penalty per square revealed
+  - Check whole puzzle
+    - Unlimited tries
+    - Add a time penalty
+  - Share button
+    - Share to bluesky or copy link
+  - Login button
+    - If user is not logged in, blur whole page and put a popup
+    - If user is logged in, show page as normal with username in top right
