@@ -1,5 +1,7 @@
+import type { Friend } from "../../types";
+
 // Mock Bluesky friends who follow each other and solved today's mini
-export const INITIAL_FRIENDS = [
+export const INITIAL_FRIENDS: Friend[] = [
   {
     id: "alice",
     did: "did:plc:alice123",
@@ -47,7 +49,7 @@ export const INITIAL_FRIENDS = [
   },
 ];
 
-export const CURRENT_USER = {
+export const CURRENT_USER: Omit<Friend, "timeSeconds"> = {
   id: "current-user",
   did: "did:plc:aaron001",
   handle: "aaron.bsky.social",

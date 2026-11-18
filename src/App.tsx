@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import type { CellPosition, Clue, Direction, Friend, RankedFriend, Tab } from '../types';
 import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
 import { INITIAL_FRIENDS, CURRENT_USER } from '../lib/atproto/mockFriends';
 
@@ -7,32 +8,33 @@ export default function App() {
   const size = puzzle.size;
 
   // Grid state: 5x5 array of strings (empty string for unfilled)
-  const [grid, setGrid] = useState(() =>
+  const [grid, setGrid] = useState<string[][]>(() =>
     Array(size).fill(null).map(() => Array(size).fill(''))
   );
 
   // Selected cell & direction
-  const [selectedCell, setSelectedCell] = useState({ row: 0, col: 0 });
-  const [direction, setDirection] = useState('across'); // 'across' or 'down'
+  const [selectedCell, setSelectedCell] = useState<CellPosition>({ row: 0, col: 0 });
+  const [direction, setDirection] = useState<Direction>('across');
 
   // Timer & completion states
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [isAssisted, setIsAssisted] = useState(false);
+  // Not read yet; reserved for marking assisted solves on the leaderboard.
+  const [_isAssisted, setIsAssisted] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   // Active side panel tab: 'clues' or 'leaderboard'
-  const [activeTab, setActiveTab] = useState('clues');
+  const [activeTab, setActiveTab] = useState<Tab>('clues');
 
   // Frozen first completion score (purely in-memory, resets on browser refresh)
-  const [userFirstScore, setUserFirstScore] = useState(null);
+  const [userFirstScore, setUserFirstScore] = useState<number | null>(null);
 
-  const gridContainerRef = useRef(null);
+  const gridContainerRef = useRef<HTMLDivElement>(null);
 
   // Timer interval
   useEffect(() => {
-    let interval = null;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (timerActive && !isCompleted) {
       interval = setInterval(() => {
         setSecondsElapsed((prev) => prev + 1);
@@ -42,7 +44,7 @@ export default function App() {
   }, [timerActive, isCompleted]);
 
   // Format seconds to mm:ss
-  const formatTime = (totalSeconds) => {
+  const formatTime = (totalSeconds: number | null | undefined): string => {
     if (totalSeconds === null || totalSeconds === undefined) return '--:--';
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -51,7 +53,7 @@ export default function App() {
 
   // Helper to check if a cell is black
   const isBlack = useCallback(
-    (r, c) => {
+    (r: number, c: number): boolean => {
       if (r < 0 || r >= size || c < 0 || c >= size) return true;
       return puzzle.solution[r][c] === '#';
     },
@@ -60,7 +62,7 @@ export default function App() {
 
   // Check puzzle completion
   const checkCompletion = useCallback(
-    (currentGrid) => {
+    (currentGrid: string[][]): boolean => {
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           if (!isBlack(r, c)) {
@@ -77,7 +79,7 @@ export default function App() {
 
   // Advance cursor to next white cell in current direction
   const advanceCursor = useCallback(
-    (r, c, dir) => {
+    (r: number, c: number, dir: Direction): CellPosition => {
       let nextR = r;
       let nextC = c;
       if (dir === 'across') {
@@ -96,7 +98,7 @@ export default function App() {
 
   // Retreat cursor backward
   const retreatCursor = useCallback(
-    (r, c, dir) => {
+    (r: number, c: number, dir: Direction): CellPosition => {
       let prevR = r;
       let prevC = c;
       if (dir === 'across') {
@@ -114,7 +116,7 @@ export default function App() {
   );
 
   // Cell click
-  const handleCellClick = (r, c) => {
+  const handleCellClick = (r: number, c: number) => {
     if (isBlack(r, c)) return;
     if (selectedCell.row === r && selectedCell.col === c) {
       setDirection((prev) => (prev === 'across' ? 'down' : 'across'));
@@ -124,7 +126,7 @@ export default function App() {
   };
 
   // Find active clue based on selected cell & direction
-  const getActiveClue = useCallback(() => {
+  const getActiveClue = useCallback((): Clue | undefined => {
     const list = puzzle.clues[direction];
     if (direction === 'across') {
       return (
@@ -150,7 +152,7 @@ export default function App() {
   const activeClue = getActiveClue();
 
   // Check if cell is in active word
-  const isCellInActiveWord = (r, c) => {
+  const isCellInActiveWord = (r: number, c: number): boolean => {
     if (!activeClue) return false;
     if (direction === 'across') {
       return (
@@ -169,7 +171,7 @@ export default function App() {
 
   // Keyboard navigation & typing
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (showModal) return;
 
       const { row, col } = selectedCell;
@@ -247,7 +249,7 @@ export default function App() {
   }, [selectedCell, direction, grid, isBlack, size, advanceCursor, retreatCursor, checkCompletion, showModal, secondsElapsed]);
 
   // Clue item click
-  const handleClueClick = (clue, dir) => {
+  const handleClueClick = (clue: Clue, dir: Direction) => {
     setActiveTab('clues');
     setDirection(dir);
     setSelectedCell({ row: clue.row, col: clue.col });
@@ -290,7 +292,7 @@ export default function App() {
   // Compute the Leaderboard ranking purely by elapsed time
   const leaderboardData = useMemo(() => {
     // Current user entry
-    const userEntry = {
+    const userEntry: Friend = {
       ...CURRENT_USER,
       timeSeconds: userFirstScore,
     };
@@ -300,18 +302,17 @@ export default function App() {
 
     // Filter completed (has time) vs uncompleted (null)
     const completed = all
-      .filter((item) => item.timeSeconds !== null)
+      .filter((item): item is Friend & { timeSeconds: number } => item.timeSeconds !== null)
       .sort((a, b) => a.timeSeconds - b.timeSeconds);
 
     const unranked = all.filter((item) => item.timeSeconds === null);
 
-    // Assign 1-based ranks (purely by time)
-    const ranked = completed.map((item, index) => {
-      // Handle potential ties
-      if (index > 0 && item.timeSeconds === completed[index - 1].timeSeconds) {
-        return { ...item, rank: completed[index - 1].rank };
-      }
-      return { ...item, rank: index + 1 };
+    // Assign 1-based ranks (purely by time); tied times share the earlier rank
+    const ranked: RankedFriend[] = [];
+    completed.forEach((item, index) => {
+      const prev = ranked[index - 1];
+      const rank = prev && prev.timeSeconds === item.timeSeconds ? prev.rank : index + 1;
+      ranked.push({ ...item, rank });
     });
 
     return { ranked, unranked };

@@ -1,4 +1,6 @@
-export const EASY_PUZZLE = {
+import type { Puzzle } from "../../types";
+
+export const EASY_PUZZLE: Puzzle = {
   id: "mini-test-01",
   title: "Aaron's Test Mini",
   date: "Today's Mini",
