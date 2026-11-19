@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently --kill-others -n api,web \"npm:dev:server\" \"npm:dev:client\"",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
-    "build": "npm run typecheck && vite build && tsc -p tsconfig.server.json",
+    "build": "npm run typecheck && vite build && npm run build:server",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -14,6 +14,8 @@
     "dev:client": "vite",
     "start": "NODE_ENV=production node --env-file-if-exists=.env dist-server/server/index.js",
     "test:server": "tsx --test tests/server.smoke.ts",
+    "build:server": "tsc -p tsconfig.server.json && node scripts/copy-server-assets.mjs",
+    "test:db": "tsx --test tests/database.smoke.ts",
     "validate-puzzles": "node --experimental-strip-types scripts/validate-puzzles.mjs"
   },
   "dependencies": {
@@ -21,7 +23,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "vite": "^8.3.8",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "better-sqlite3": "^13.2.0"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",
@@ -33,7 +36,8 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
     "concurrently": "^9.2.5",
-    "tsx": "^4.23.15"
+    "tsx": "^4.23.15",
+    "@types/better-sqlite3": "^9.6.0"
   },
   "engines": {
     "node": ">=22.12.0"
