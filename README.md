@@ -108,3 +108,22 @@ Use dedicated Bluesky test accounts, not personal accounts, when testing login a
 - Pick up work from the [project board](https://github.com/orgs/CSE-210-Group-09/projects/4); each issue lists its dependencies and relevant ADRs.
 - Work on a branch and open a PR against `main`.
 - Changing a recorded decision? Add a new ADR (see [`docs/adr/README.md`](docs/adr/README.md)) rather than editing an accepted one.
+
+## Running tests
+
+Use Node.js 24 LTS, then install dependencies with `npm ci`.
+
+```bash
+npm test           # run the test suite once
+npm run test:watch # rerun tests while editing
+npm run typecheck
+npm run build
+```
+
+Vitest uses jsdom and React Testing Library for component tests. Tests can import
+`describe`, `it`, `expect`, and `vi` from `vitest`; name files `*.test.ts` or
+`*.test.tsx`. `src/App.test.tsx` demonstrates a timer test with a fake clock.
+
+GitHub Actions runs dependency installation, type checking, the production build,
+and tests for every pull request and push to `main`. A failed assertion fails the
+CI job. Puzzle file validation also runs once `validate-puzzles` is available.
