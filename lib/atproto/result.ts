@@ -1,6 +1,6 @@
-import { RESULT_COLLECTION, type ResultRecord } from '../../types/atproto';
+import { RESULT_COLLECTION, type ResultRecord } from '../../types/atproto.js';
 
-export { RESULT_COLLECTION, type ResultRecord } from '../../types/atproto';
+export { RESULT_COLLECTION, type ResultRecord } from '../../types/atproto.js';
 
 export type ResultValidation =
   | { success: true; value: ResultRecord }
