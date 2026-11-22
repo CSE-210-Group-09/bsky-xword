@@ -3,6 +3,7 @@ import path from 'node:path';
 export interface ServerConfig {
   port: number;
   dbPath: string;
+  puzzlesDir: string;
   publicUrl: string;
   production: boolean;
 }
@@ -19,6 +20,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   return {
     port,
     dbPath: path.resolve(env.DB_PATH ?? 'data/local.db'),
+    puzzlesDir: path.resolve(env.PUZZLES_DIR ?? 'puzzles'),
     publicUrl: publicUrl.origin,
     production: env.NODE_ENV === 'production',
   };
