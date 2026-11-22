@@ -29,10 +29,27 @@ export function createApp({ production = false, staticDir = path.resolve('dist')
   app.use((_req, res) => {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Resource not found' } } satisfies ApiError);
   });
-  const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
-    const status = error.status === 400 ? 400 : error.status === 413 ? 413 : 500;
-    const code = status === 400 ? 'INVALID_JSON' : status === 413 ? 'PAYLOAD_TOO_LARGE' : 'INTERNAL_ERROR';
-    const message = status === 400 ? 'Invalid JSON body' : status === 413 ? 'Request body too large' : 'Internal server error';
+  const handleError: ErrorRequestHandler = (error, _req, res, next) => {
+    if (res.headersSent) return next(error);
+
+    let status = 500;
+    let code = 'INTERNAL_ERROR';
+    let message = 'Internal server error';
+    if (error?.type === 'entity.parse.failed') {
+      status = 400;
+      code = 'INVALID_JSON';
+      message = 'Invalid JSON body';
+    } else if (error?.type === 'entity.too.large') {
+      status = 413;
+      code = 'PAYLOAD_TOO_LARGE';
+      message = 'Request body too large';
+    } else if (Number.isInteger(error?.status) && error.status >= 400 && error.status < 500) {
+      status = error.status;
+      code = 'BAD_REQUEST';
+      message = 'Bad request';
+    } else {
+      console.error(error);
+    }
     res.status(status).json({ error: { code, message } } satisfies ApiError);
   };
   app.use(handleError);

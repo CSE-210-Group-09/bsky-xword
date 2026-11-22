@@ -5,7 +5,7 @@
   "description": "Crossword prototype for AT Protocol",
   "scripts": {
     "dev": "concurrently --kill-others -n api,web \"npm:dev:server\" \"npm:dev:client\"",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.test.json",
     "build": "npm run typecheck && vite build && tsc -p tsconfig.server.json",
     "preview": "vite preview",
     "test": "vitest run",
