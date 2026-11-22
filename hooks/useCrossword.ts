@@ -122,14 +122,6 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete }: Options) 
     onComplete(true);
   };
 
-  // Clear the grid for a reattempt
-  const reset = () => {
-    setGrid(emptyGrid(size));
-    setIsCompleted(false);
-    setIsAssisted(false);
-    setSelectedCell({ row: 0, col: 0 });
-    setDirection('across');
-  };
 
   return {
     grid,
@@ -141,6 +133,5 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete }: Options) 
     selectCell,
     selectClue,
     autoFill,
-    reset,
   };
 }
