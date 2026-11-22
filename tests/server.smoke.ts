@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import express from 'express';
 import { test } from 'node:test';
 import { once } from 'node:events';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
@@ -13,7 +14,7 @@ test('server validates environment configuration', () => {
   assert.throws(() => loadConfig({ PUBLIC_URL: 'file:///tmp/test' }));
 });
 
-test('production serves SPA, health and JSON errors without leaking internals', async () => {
+test('production serves SPA, health and JSON errors without leaking internals', async (t) => {
   const dir = await mkdtemp(path.join(tmpdir(), 'xword-server-'));
   await writeFile(path.join(dir, 'index.html'), '<h1>Mini crossword</h1>');
   const server = createApp({ production: true, staticDir: dir }).listen(0, '127.0.0.1');
@@ -38,6 +39,36 @@ test('production serves SPA, health and JSON errors without leaking internals', 
     });
     assert.equal(invalid.status, 400);
     assert.deepEqual(await invalid.json(), { error: { code: 'INVALID_JSON', message: 'Invalid JSON body' } });
+    const malformedPath = await fetch(`${base}/%E0%A4%A`);
+    assert.equal(malformedPath.status, 400);
+    assert.deepEqual(await malformedPath.json(), { error: { code: 'BAD_REQUEST', message: 'Bad request' } });
+
+    const oversized = await fetch(`${base}/api/health`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: 'a'.repeat(33 * 1024) }),
+    });
+    assert.equal(oversized.status, 413);
+    assert.deepEqual(await oversized.json(), {
+      error: { code: 'PAYLOAD_TOO_LARGE', message: 'Request body too large' },
+    });
+
+    const unsupportedEncoding = await fetch(`${base}/api/health`, {
+      method: 'POST', headers: { 'content-type': 'application/json', 'content-encoding': 'unsupported' }, body: '{}',
+    });
+    assert.equal(unsupportedEncoding.status, 415);
+    assert.deepEqual(await unsupportedEncoding.json(), { error: { code: 'BAD_REQUEST', message: 'Bad request' } });
+
+    // Simulate an unexpected file-serving failure without exposing it to the client.
+    const failure = new Error('Private file-serving failure');
+    t.mock.method(express.response, 'sendFile', () => { throw failure; });
+    const logged = t.mock.method(console, 'error', () => {});
+    const internal = await fetch(`${base}/solve`);
+    assert.equal(internal.status, 500);
+    assert.deepEqual(await internal.json(), {
+      error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
+    });
+    assert.equal(logged.mock.callCount(), 1);
+    assert.equal(logged.mock.calls[0].arguments[0], failure);
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     await rm(dir, { recursive: true });
