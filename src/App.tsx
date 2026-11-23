@@ -26,11 +26,13 @@ export default function App() {
 
   // Stop the timer, freeze the first completion time (never overwritten on reattempt)
   // and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
+  // getTotalSeconds() includes a penalty from the same click, e.g. revealing the last square.
   const handleComplete = (assisted: boolean) => {
     setTimerActive(false);
+    const total = timer.getTotalSeconds();
     setUserFirstScore((prev) => {
       if (prev === null) {
-        return assisted && timer.secondsElapsed <= 0 ? 45 : timer.secondsElapsed;
+        return assisted && total <= 0 ? 45 : total;
       }
       return prev;
     });
