@@ -11,8 +11,6 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('reveal square (#27)', () => {
-  test.fail(() => true, 'Written before #27; its PR deletes this line');
-
   test('fills the selected cell, locks it, and adds 10 seconds once', async ({ page }) => {
     await cell(page, 0, 0).click();
     await page.getByRole('button', { name: 'Reveal square' }).click();

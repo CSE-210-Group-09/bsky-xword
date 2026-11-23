@@ -37,7 +37,11 @@ export default function App() {
     setShowModal(true);
   };
 
-  const crossword = useCrossword(puzzle, { disabled: showModal, onComplete: handleComplete });
+  const crossword = useCrossword(puzzle, {
+    disabled: showModal,
+    onComplete: handleComplete,
+    onPenalty: timer.addPenalty,
+  });
 
   const handleClueClick = (clue: Clue, dir: Direction) => {
     setActiveTab('clues');
@@ -69,14 +73,23 @@ export default function App() {
           <Grid
             puzzle={puzzle}
             grid={crossword.grid}
+            revealed={crossword.revealed}
             selectedCell={crossword.selectedCell}
             direction={crossword.direction}
             activeClue={crossword.activeClue}
             onCellClick={crossword.selectCell}
           />
 
-          {/* Quick testing controls */}
+          {/* Solving help (ADR 0008 penalties) and quick testing controls */}
           <div className="controls-bar">
+            <button
+              className="btn btn-secondary"
+              onClick={crossword.revealCell}
+              disabled={crossword.isCompleted}
+              title="Fill the selected square with its answer (+10s)"
+            >
+              Reveal square
+            </button>
             <button className="btn btn-secondary" onClick={handleReset}>
               Reset Puzzle
             </button>
