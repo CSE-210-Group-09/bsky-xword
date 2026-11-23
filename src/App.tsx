@@ -61,7 +61,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Header secondsElapsed={timer.secondsElapsed} />
+      <Header secondsElapsed={timer.displayedSeconds} recentPenalty={timer.recentPenalty} />
       <CurrentClueBar activeClue={crossword.activeClue} direction={crossword.direction} />
 
       <main className="puzzle-layout">
