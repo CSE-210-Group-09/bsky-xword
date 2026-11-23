@@ -4,20 +4,38 @@
   "type": "module",
   "description": "Crossword prototype for AT Protocol",
   "scripts": {
-    "dev": "vite",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "dev": "concurrently --kill-others -n api,web \"npm:dev:server\" \"npm:dev:client\"",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.test.json",
+    "build": "npm run typecheck && vite build && tsc -p tsconfig.server.json",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev:server": "tsx watch --env-file-if-exists=.env server/index.ts",
+    "dev:client": "vite",
+    "start": "NODE_ENV=production node --env-file-if-exists=.env dist-server/server/index.js",
+    "test:server": "tsx --test tests/server.smoke.ts",
+    "validate-puzzles": "node --experimental-strip-types scripts/validate-puzzles.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "vite": "^8.3.8"
+    "vite": "^8.3.8",
+    "express": "^5.3.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "typescript": "^7.0.2"
+    "jsdom": "^27.0.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "concurrently": "^9.2.5",
+    "tsx": "^4.23.15"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

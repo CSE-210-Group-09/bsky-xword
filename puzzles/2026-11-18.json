@@ -1,0 +1,22 @@
+{
+  "id": "mini-test-01",
+  "title": "Aaron's Test Mini",
+  "author": "Aaron",
+  "grid": ["CHEF#", "RAVER", "ABODE", "BIKES", "#TEXT"],
+  "clues": {
+    "across": {
+      "CHEF": "Kitchen leader / head cook",
+      "RAVER": "Dance party enthusiast",
+      "ABODE": "Home or dwelling ('humble ___')",
+      "BIKES": "Two-wheeled pedal vehicles",
+      "TEXT": "Send an SMS message"
+    },
+    "down": {
+      "CRAB": "Ocean creature with claws",
+      "HABIT": "Daily routine or tendency",
+      "EVOKE": "Bring to mind, as a memory",
+      "FEDEX": "Package delivery rival of UPS",
+      "REST": "Take a breather and relax"
+    }
+  }
+}
