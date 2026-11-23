@@ -16,6 +16,8 @@ export interface UseTimerReturn {
   secondsElapsed: number; // Alias for displayedSeconds for backwards compatibility
   recentPenalty: number | null;
   addPenalty: (seconds: number) => void;
+  /** Elapsed plus penalty seconds, current even before React re-renders. */
+  getTotalSeconds: () => number;
   reset: () => void;
 }
 
@@ -40,6 +42,11 @@ export function useTimer(optionsOrRunning: boolean | UseTimerOptions = true): Us
 
   const penaltyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  // State is a snapshot until the next render, so a penalty added in the same event as
+  // completion would be missed. These refs track the same totals synchronously.
+  const elapsedRef = useRef(initialElapsed);
+  const penaltyRef = useRef(initialPenalties);
+
   // Clear timeout on unmount
   useEffect(() => {
     return () => {
@@ -61,7 +68,8 @@ export function useTimer(optionsOrRunning: boolean | UseTimerOptions = true): Us
       }
       if (!interval) {
         interval = setInterval(() => {
-          setElapsedSeconds((prev) => prev + 1);
+          elapsedRef.current += 1;
+          setElapsedSeconds(elapsedRef.current);
         }, 1000);
       }
     };
@@ -96,7 +104,8 @@ export function useTimer(optionsOrRunning: boolean | UseTimerOptions = true): Us
   }, [running]);
 
   const addPenalty = useCallback((seconds: number) => {
-    setPenaltySeconds((prev) => prev + seconds);
+    penaltyRef.current += seconds;
+    setPenaltySeconds(penaltyRef.current);
     setRecentPenalty(seconds);
 
     if (penaltyTimeoutRef.current) {
@@ -108,7 +117,11 @@ export function useTimer(optionsOrRunning: boolean | UseTimerOptions = true): Us
     }, 1500);
   }, []);
 
+  const getTotalSeconds = useCallback(() => elapsedRef.current + penaltyRef.current, []);
+
   const reset = useCallback(() => {
+    elapsedRef.current = 0;
+    penaltyRef.current = 0;
     setElapsedSeconds(0);
     setPenaltySeconds(0);
     setRecentPenalty(null);
@@ -126,6 +139,7 @@ export function useTimer(optionsOrRunning: boolean | UseTimerOptions = true): Us
     secondsElapsed: displayedSeconds,
     recentPenalty,
     addPenalty,
+    getTotalSeconds,
     reset,
   };
 }
