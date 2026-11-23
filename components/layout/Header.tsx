@@ -2,9 +2,10 @@ import { formatTime } from '../../lib/format';
 
 interface HeaderProps {
   secondsElapsed: number;
+  recentPenalty?: number | null;
 }
 
-export function Header({ secondsElapsed }: HeaderProps) {
+export function Header({ secondsElapsed, recentPenalty }: HeaderProps) {
   return (
     <header className="header">
       <div className="brand">
@@ -18,6 +19,11 @@ export function Header({ secondsElapsed }: HeaderProps) {
       <div className="timer-box">
         <span>⏱️</span>
         <span>{formatTime(secondsElapsed)}</span>
+        {recentPenalty != null && (
+          <span className="penalty-badge" data-testid="penalty-badge">
+            +{recentPenalty}s
+          </span>
+        )}
       </div>
     </header>
   );
