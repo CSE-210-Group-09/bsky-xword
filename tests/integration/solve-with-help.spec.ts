@@ -38,8 +38,6 @@ test.describe('reveal square (#27)', () => {
 });
 
 test.describe('check puzzle (#28)', () => {
-  test.fail(() => true, 'Written before #28; its PR deletes this line');
-
   test('marks only wrong letters, adds 30 seconds, and clears a mark on edit', async ({ page }) => {
     const wrong = answer(0, 0) === 'X' ? 'Y' : 'X';
     await typeAt(page, 0, 0, wrong);

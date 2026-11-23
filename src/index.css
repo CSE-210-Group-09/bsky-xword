@@ -194,6 +194,15 @@ body {
   border-color: transparent #0085ff transparent transparent;
 }
 
+/* Wrong letters found by Check puzzle get a red slash until they are changed */
+.cell.incorrect::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top right, transparent calc(50% - 1.5px), #e0245e, transparent calc(50% + 1.5px));
+  pointer-events: none;
+}
+
 .cell-number {
   position: absolute;
   top: 2px;

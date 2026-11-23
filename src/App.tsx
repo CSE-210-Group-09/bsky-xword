@@ -74,6 +74,7 @@ export default function App() {
             puzzle={puzzle}
             grid={crossword.grid}
             revealed={crossword.revealed}
+            incorrect={crossword.incorrect}
             selectedCell={crossword.selectedCell}
             direction={crossword.direction}
             activeClue={crossword.activeClue}
@@ -89,6 +90,14 @@ export default function App() {
               title="Fill the selected square with its answer (+10s)"
             >
               Reveal square
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={crossword.checkPuzzle}
+              disabled={crossword.isCompleted}
+              title="Mark every wrong letter in the grid (+30s)"
+            >
+              Check puzzle
             </button>
             <button className="btn btn-secondary" onClick={handleReset}>
               Reset Puzzle

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import type { CellPosition, Clue, Direction, Puzzle } from '../types';
-import { emptyGrid, emptyMarks, findActiveClue, isBlack, isSolved, nextCell, prevCell } from '../lib/puzzles/grid';
-import { REVEAL_PENALTY_SECONDS } from './useTimer';
+import {
+  emptyGrid, emptyMarks, findActiveClue, isBlack, isSolved, nextCell, prevCell, setMark,
+} from '../lib/puzzles/grid';
+import { CHECK_PENALTY_SECONDS, REVEAL_PENALTY_SECONDS } from './useTimer';
 
 interface Options {
   /** Ignore key presses, e.g. while the completion modal is open. */
   disabled: boolean;
   /** Called when the grid is solved; `assisted` is true for auto-fill. */
   onComplete: (assisted: boolean) => void;
-  /** Called with the seconds to add when the player reveals a square. */
+  /** Called with the seconds to add when the player reveals a square or checks the puzzle. */
   onPenalty?: (seconds: number) => void;
 }
 
@@ -26,6 +28,10 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
   // Revealed cells show their answer and can't be changed (ADR 0008: +10s each)
   const [revealed, setRevealed] = useState<boolean[][]>(() => emptyMarks(size));
   const [revealCount, setRevealCount] = useState(0);
+
+  // Wrong letters found by the last check (ADR 0008: +30s per check); a mark clears on edit
+  const [incorrect, setIncorrect] = useState<boolean[][]>(() => emptyMarks(size));
+  const [checkCount, setCheckCount] = useState(0);
 
   const [isCompleted, setIsCompleted] = useState(false);
   // Not read yet; reserved for marking assisted solves on the leaderboard.
@@ -74,6 +80,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
             rArr.map((val, cIdx) => (rIdx === row && cIdx === col ? '' : val))
           );
           setGrid(newGrid);
+          setIncorrect(setMark(incorrect, row, col, false));
         } else {
           const prev = prevCell(puzzle, selectedCell, direction);
           if (revealed[prev.row][prev.col]) {
@@ -84,6 +91,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
             rArr.map((val, cIdx) => (rIdx === prev.row && cIdx === prev.col ? '' : val))
           );
           setGrid(newGrid);
+          setIncorrect(setMark(incorrect, prev.row, prev.col, false));
           setSelectedCell(prev);
         }
       } else if (/^[a-zA-Z]$/.test(e.key)) {
@@ -97,6 +105,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
           rArr.map((val, cIdx) => (rIdx === row && cIdx === col ? char : val))
         );
         setGrid(newGrid);
+        setIncorrect(setMark(incorrect, row, col, false));
 
         // Check if finished
         if (isSolved(puzzle, newGrid)) {
@@ -110,7 +119,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [puzzle, selectedCell, direction, grid, revealed, size, disabled, onComplete]);
+  }, [puzzle, selectedCell, direction, grid, revealed, incorrect, size, disabled, onComplete]);
 
   // Cell click: select it, or toggle direction if already selected
   const selectCell = (r: number, c: number) => {
@@ -136,13 +145,24 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
       rArr.map((val, cIdx) => (rIdx === row && cIdx === col ? puzzle.solution[row][col] : val))
     );
     setGrid(newGrid);
-    setRevealed(revealed.map((rArr, rIdx) => rArr.map((val, cIdx) => val || (rIdx === row && cIdx === col))));
+    setRevealed(setMark(revealed, row, col, true));
+    setIncorrect(setMark(incorrect, row, col, false));
     setRevealCount((prev) => prev + 1);
     onPenalty?.(REVEAL_PENALTY_SECONDS);
     if (isSolved(puzzle, newGrid)) {
       setIsCompleted(true);
       onComplete(false);
     }
+  };
+
+  // Check the whole puzzle: mark every filled-in wrong letter. Each check costs the penalty.
+  const checkPuzzle = () => {
+    if (disabled || isCompleted) return;
+    setIncorrect(grid.map((rArr, r) =>
+      rArr.map((val, c) => val !== '' && val.toUpperCase() !== puzzle.solution[r][c].toUpperCase())
+    ));
+    setCheckCount((prev) => prev + 1);
+    onPenalty?.(CHECK_PENALTY_SECONDS);
   };
 
   // Quick Auto-Fill for testing
@@ -161,6 +181,8 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
     setGrid(emptyGrid(size));
     setRevealed(emptyMarks(size));
     setRevealCount(0);
+    setIncorrect(emptyMarks(size));
+    setCheckCount(0);
     setIsCompleted(false);
     setIsAssisted(false);
     setSelectedCell({ row: 0, col: 0 });
@@ -171,6 +193,8 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
     grid,
     revealed,
     revealCount,
+    incorrect,
+    checkCount,
     selectedCell,
     direction,
     activeClue,
@@ -179,6 +203,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
     selectCell,
     selectClue,
     revealCell,
+    checkPuzzle,
     autoFill,
     reset,
   };
