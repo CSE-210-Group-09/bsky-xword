@@ -3,7 +3,8 @@
   "compilerOptions": {
     "noEmit": true,
     "module": "ESNext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"]
   },
-  "include": ["tests", "server", "types/api.ts", "vitest.config.ts"]
+  "include": ["tests", "server", "types/api.ts", "vitest.config.ts", "playwright.config.ts"]
 }

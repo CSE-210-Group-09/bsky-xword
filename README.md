@@ -124,9 +124,24 @@ Vitest uses jsdom and React Testing Library for component tests. Tests can impor
 `describe`, `it`, `expect`, and `vi` from `vitest`; name files `*.test.ts` or
 `*.test.tsx`. `src/App.test.tsx` demonstrates a timer test with a fake clock.
 
+Browser tests use Playwright ([ADR 0012](docs/adr/0012-test-layers-and-playwright.md)).
+Install the browser once, then run them; each command starts `npm run dev` itself.
+
+```bash
+npx playwright install --only-shell chromium
+npm run test:integration # tests/integration: one spec per story
+npm run test:e2e         # tests/e2e: the whole daily flow
+```
+
+Work test first: unit tests on each task branch before its code, the story's
+integration spec first on the story branch, and end-to-end tests ahead of the
+stories they need. A test written before its feature is marked `test.fail(...)`
+with the issue number; the PR that makes it pass deletes the marker.
+
 GitHub Actions runs dependency installation, type checking, the production build,
 and tests for every pull request and push to `main`. A failed assertion fails the
-CI job. Puzzle file validation also runs once `validate-puzzles` is available.
+CI job. Puzzle file validation also runs once `validate-puzzles` is available, and
+the Playwright integration and end-to-end tests run after the unit tests.
 
 ## Results database
 

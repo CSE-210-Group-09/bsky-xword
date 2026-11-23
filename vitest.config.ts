@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
@@ -7,5 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     clearMocks: true,
     restoreMocks: true,
+    // Playwright runs the browser tests (ADR 0012).
+    exclude: [...configDefaults.exclude, 'tests/integration/**', 'tests/e2e/**'],
   },
 });

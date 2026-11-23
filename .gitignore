@@ -12,3 +12,7 @@ dist-server
 # SQLite index and journal files
 data/*.db
 data/*.db-*
+
+# Playwright reports and traces
+playwright-report
+test-results
