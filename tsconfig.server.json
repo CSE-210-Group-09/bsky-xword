@@ -10,5 +10,5 @@
     "outDir": "dist-server",
     "types": ["node"]
   },
-  "include": ["server", "types/api.ts"]
+  "include": ["server", "types", "lib/puzzles/parse.ts", "lib/puzzles/today.ts"]
 }
