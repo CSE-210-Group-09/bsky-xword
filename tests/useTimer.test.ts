@@ -176,4 +176,29 @@ describe('useTimer hook', () => {
     expect(result.current.displayedSeconds).toBe(0);
     expect(result.current.recentPenalty).toBeNull();
   });
+
+  it('getTotalSeconds includes a penalty added earlier in the same event', () => {
+    const { result } = renderHook(() => useTimer(true));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    let total = -1;
+    act(() => {
+      result.current.addPenalty(REVEAL_PENALTY_SECONDS);
+      total = result.current.getTotalSeconds();
+    });
+
+    expect(total).toBe(3 + REVEAL_PENALTY_SECONDS);
+  });
+
+  it('getTotalSeconds starts from the initial values and returns to zero on reset', () => {
+    const { result } = renderHook(() => useTimer({ running: false, initialElapsed: 5, initialPenalties: 30 }));
+    expect(result.current.getTotalSeconds()).toBe(35);
+
+    act(() => {
+      result.current.reset();
+    });
+    expect(result.current.getTotalSeconds()).toBe(0);
+  });
 });
