@@ -27,3 +27,4 @@ format from [Michael Nygard's ADRs](https://cognitect.com/blog/2011/11/15/docume
 | [0010](0010-share-format.md) | Share format | Accepted |
 | [0011](0011-browser-oauth-client.md) | Run the Bluesky OAuth client in the browser | Proposed |
 | [0012](0012-test-layers-and-playwright.md) | Three test layers, with Playwright for browser tests | Proposed |
+| [0013](0013-saved-progress-in-localstorage.md) | Save progress in localStorage, one key per puzzle date | Proposed |
