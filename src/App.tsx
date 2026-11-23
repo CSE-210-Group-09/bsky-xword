@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Clue, Direction, Friend, Tab } from '../types';
 import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
+import { clearStaleProgress, loadProgress, PROGRESS_VERSION, saveProgress } from '../lib/puzzles/progress';
 import { INITIAL_FRIENDS, CURRENT_USER } from '../lib/atproto/mockFriends';
 import { getCurrentUserRank, rankLeaderboard } from '../lib/leaderboard';
 import { useCrossword } from '../hooks/useCrossword';
@@ -15,14 +16,25 @@ import { CompletionModal } from '../components/modals/CompletionModal';
 export default function App() {
   const puzzle = EASY_PUZZLE;
 
+  // Progress saved in this browser for today's puzzle (ADR 0013), read once before the
+  // first render so the grid and timer start where the player left off.
+  const [saved] = useState(() => {
+    clearStaleProgress(puzzle.date);
+    return loadProgress(puzzle);
+  });
+
   const [showModal, setShowModal] = useState(false);
   // Active side panel tab: 'clues' or 'leaderboard'
   const [activeTab, setActiveTab] = useState<Tab>('clues');
-  // Frozen first completion score (purely in-memory, resets on browser refresh)
-  const [userFirstScore, setUserFirstScore] = useState<number | null>(null);
+  // Frozen first completion score, saved with the rest of the progress
+  const [userFirstScore, setUserFirstScore] = useState<number | null>(saved?.finalSeconds ?? null);
 
-  const [timerActive, setTimerActive] = useState(true);
-  const timer = useTimer(timerActive);
+  const [timerActive, setTimerActive] = useState(!saved?.completed);
+  const timer = useTimer({
+    running: timerActive,
+    initialElapsed: saved?.elapsedSeconds,
+    initialPenalties: saved?.penaltySeconds,
+  });
 
   // Stop the timer, freeze the first completion time (never overwritten on reattempt)
   // and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
@@ -43,7 +55,28 @@ export default function App() {
     disabled: showModal,
     onComplete: handleComplete,
     onPenalty: timer.addPenalty,
+    initial: saved ?? undefined,
   });
+
+  // Save on every change, including each timer tick (about 10-20 µs a write, ADR 0013)
+  useEffect(() => {
+    saveProgress({
+      version: PROGRESS_VERSION,
+      date: puzzle.date,
+      grid: crossword.grid,
+      revealed: crossword.revealed,
+      incorrect: crossword.incorrect,
+      elapsedSeconds: timer.elapsedSeconds,
+      penaltySeconds: timer.penaltySeconds,
+      revealCount: crossword.revealCount,
+      checkCount: crossword.checkCount,
+      completed: crossword.isCompleted,
+      finalSeconds: userFirstScore,
+    });
+  }, [
+    puzzle.date, crossword.grid, crossword.revealed, crossword.incorrect, timer.elapsedSeconds,
+    timer.penaltySeconds, crossword.revealCount, crossword.checkCount, crossword.isCompleted, userFirstScore,
+  ]);
 
   const handleClueClick = (clue: Clue, dir: Direction) => {
     setActiveTab('clues');
