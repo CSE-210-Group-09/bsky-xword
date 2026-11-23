@@ -131,6 +131,7 @@ export default function App() {
 
       {showModal && (
         <CompletionModal
+          puzzleDate={puzzle.date}
           secondsElapsed={timer.secondsElapsed}
           currentUserRank={currentUserRank}
           ranked={leaderboard.ranked}

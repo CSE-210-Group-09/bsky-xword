@@ -1,7 +1,9 @@
 import type { RankedFriend } from '../../types';
 import { formatTime } from '../../lib/format';
+import { ShareButtons } from './ShareButtons';
 
 interface CompletionModalProps {
+  puzzleDate: string;
   secondsElapsed: number;
   currentUserRank: number | null;
   ranked: RankedFriend[];
@@ -11,6 +13,7 @@ interface CompletionModalProps {
 }
 
 export function CompletionModal({
+  puzzleDate,
   secondsElapsed,
   currentUserRank,
   ranked,
@@ -65,6 +68,8 @@ export function CompletionModal({
             ))}
           </div>
         </div>
+
+        <ShareButtons date={puzzleDate} timeSeconds={secondsElapsed} rank={currentUserRank} />
 
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={onViewLeaderboard}>

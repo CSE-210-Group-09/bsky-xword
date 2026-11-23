@@ -604,6 +604,25 @@ body {
   color: #6b7280;
 }
 
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.share-actions .btn {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.share-error {
+  width: 100%;
+  font-size: 13px;
+  color: #c0362c;
+}
+
 .modal-actions {
   display: flex;
   flex-direction: column;
