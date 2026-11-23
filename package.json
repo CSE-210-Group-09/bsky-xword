@@ -13,7 +13,7 @@
     "dev:server": "tsx watch --env-file-if-exists=.env server/index.ts",
     "dev:client": "vite",
     "start": "NODE_ENV=production node --env-file-if-exists=.env dist-server/server/index.js",
-    "test:server": "tsx --test tests/server.smoke.ts",
+    "test:server": "tsx --test tests/server.smoke.ts tests/leaderboard.smoke.ts",
     "build:server": "tsc -p tsconfig.server.json && node scripts/copy-server-assets.mjs",
     "test:db": "tsx --test tests/database.smoke.ts",
     "validate-puzzles": "node --experimental-strip-types scripts/validate-puzzles.mjs"
