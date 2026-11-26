@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OAuth Spike (#36)</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Bluesky OAuth spike: browser client</h1>
+      <p class="hint">
+        Issue #36. Use a dedicated Bluesky <strong>test account</strong>, not a personal one.
+        The test record uses record key <code>2000-01-01</code> so it can never be mistaken for a real result.
+      </p>
+
+      <section id="signed-out" hidden>
+        <h2>1. Sign in</h2>
+        <label>
+          Scope to request
+          <select id="scope-mode"></select>
+        </label>
+        <p class="hint" id="scope-preview"></p>
+        <form id="sign-in-form">
+          <input id="handle" name="handle" placeholder="your-test-account.bsky.social" autocomplete="off" required />
+          <button type="submit">Sign in with Bluesky</button>
+        </form>
+      </section>
+
+      <section id="signed-in" hidden>
+        <h2>2. Session</h2>
+        <dl id="session-info"></dl>
+        <div class="buttons">
+          <button id="btn-write">Write test record (click twice)</button>
+          <button id="btn-read">Read it back (public, no auth)</button>
+          <button id="btn-delete">Delete test record</button>
+          <button id="btn-probe">Scope probe: write another collection</button>
+          <button id="btn-refresh">Force token refresh</button>
+          <button id="btn-sign-out" class="danger">Sign out</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Log</h2>
+        <pre id="log"></pre>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

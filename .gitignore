@@ -6,3 +6,9 @@ dist
 .env
 .env.*
 !.env.example
+
+dist-server
+
+# SQLite index and journal files
+data/*.db
+data/*.db-*

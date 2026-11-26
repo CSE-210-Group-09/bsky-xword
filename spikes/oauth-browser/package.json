@@ -1,0 +1,20 @@
+{
+  "name": "bsky-xword-oauth-browser-spike",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Spike for #36: Bluesky OAuth with the browser client on localhost",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@atproto/api": "0.30.3",
+    "@atproto/oauth-client-browser": "0.5.14"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "lexicon": 1,
+  "id": "io.github.cse-210-group-09.xword.result",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "description": "A player's first completed solve. The application requires the record key to equal puzzleDate (YYYY-MM-DD).",
+      "record": {
+        "type": "object",
+        "required": ["puzzleId", "puzzleDate", "timeSeconds", "revealCount", "checkCount", "completedAt"],
+        "properties": {
+          "puzzleId": { "type": "string", "minLength": 1 },
+          "puzzleDate": { "type": "string", "minLength": 10, "maxLength": 10, "description": "A valid calendar date in YYYY-MM-DD format, using the puzzle's Pacific date." },
+          "timeSeconds": { "type": "integer", "minimum": 0, "maximum": 9007199254740991, "description": "Elapsed seconds including reveal and check penalties." },
+          "revealCount": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+          "checkCount": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+          "completedAt": { "type": "string", "format": "datetime" }
+        }
+      }
+    }
+  }
+}

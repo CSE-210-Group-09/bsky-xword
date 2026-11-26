@@ -127,3 +127,20 @@ Vitest uses jsdom and React Testing Library for component tests. Tests can impor
 GitHub Actions runs dependency installation, type checking, the production build,
 and tests for every pull request and push to `main`. A failed assertion fails the
 CI job. Puzzle file validation also runs once `validate-puzzles` is available.
+
+## Results database
+
+The API creates the SQLite index and runs versioned SQL migrations automatically
+before listening. `DB_PATH` selects the file, defaulting to `data/local.db`; missing
+parent directories are created. Keep that file on persistent storage in production.
+The build copies migrations into `dist-server` alongside the compiled database module.
+
+`lib/db/index.ts` exposes `openResultsDatabase(path)` with `upsertResult`,
+`getResultsForDate`, and `close`, keeping the driver behind one interface. The query
+returns only requested DIDs for the specified date, ordered by time. Upsert refreshes
+the server's cached copy of a repo record, including CID and indexing timestamp.
+The publishing flow enforces first completion; this index does not prevent repo edits.
+
+Run `npm run test:db` for in-memory query/upsert tests and an on-disk migration restart
+test. To add a migration, add the next zero-padded SQL file to `lib/db/migrations/`;
+applied files are recorded in `schema_migrations` and must not be edited.
