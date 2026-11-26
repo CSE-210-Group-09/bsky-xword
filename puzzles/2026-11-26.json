@@ -1,0 +1,22 @@
+{
+  "id": "mini-2026-11-26",
+  "title": "Chant Along",
+  "author": "Anirudh Sriram",
+  "grid": ["ACES#", "THEIR", "LARGE", "ANIME", "STEAL"],
+  "clues": {
+    "across": {
+      "ACES": "Top cards in the deck",
+      "THEIR": "Belonging to them",
+      "LARGE": "Bigger than medium",
+      "ANIME": "Japanese animation",
+      "STEAL": "Swipe a base, in baseball"
+    },
+    "down": {
+      "ATLAS": "Titan who holds up the sky",
+      "CHANT": "Stadium crowd's repeated slogan",
+      "EERIE": "Spooky",
+      "SIGMA": "Greek letter for summation",
+      "REEL": "Fishing rod attachment"
+    }
+  }
+}

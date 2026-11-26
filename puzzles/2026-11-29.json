@@ -1,0 +1,22 @@
+{
+  "id": "mini-2026-11-29",
+  "title": "Read On",
+  "author": "Anirudh Sriram",
+  "grid": ["SCAR#", "LASER", "ARISE", "MEDIA", "#SEND"],
+  "clues": {
+    "across": {
+      "SCAR": "Mark left by a healed wound",
+      "LASER": "Beam used in a presentation pointer",
+      "ARISE": "Get up",
+      "MEDIA": "News outlets, collectively",
+      "SEND": "Click this after typing an email"
+    },
+    "down": {
+      "SLAM": "Shut hard, as a door",
+      "CARES": "Is concerned",
+      "ASIDE": "Actor's remark to the audience",
+      "RESIN": "Sticky tree sap",
+      "READ": "Go through a book"
+    }
+  }
+}

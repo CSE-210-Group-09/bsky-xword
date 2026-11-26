@@ -1,0 +1,22 @@
+{
+  "id": "mini-2026-11-27",
+  "title": "Key Change",
+  "author": "Anirudh Sriram",
+  "grid": ["#PART", "ORDER", "PIANO", "EMPTY", "NET##"],
+  "clues": {
+    "across": {
+      "PART": "Role in a play",
+      "ORDER": "Place a request at a restaurant",
+      "PIANO": "Instrument with 88 keys",
+      "EMPTY": "Having nothing inside",
+      "NET": "Mesh behind a soccer goal"
+    },
+    "down": {
+      "OPEN": "Not closed",
+      "PRIME": "Number divisible only by 1 and itself",
+      "ADAPT": "Adjust to new conditions",
+      "RENT": "Monthly apartment payment",
+      "TROY": "Ancient city of the wooden horse"
+    }
+  }
+}

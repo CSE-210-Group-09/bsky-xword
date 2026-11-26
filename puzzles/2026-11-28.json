@@ -1,0 +1,22 @@
+{
+  "id": "mini-2026-11-28",
+  "title": "Ocean Views",
+  "author": "Anirudh Sriram",
+  "grid": ["CART#", "OCEAN", "PULSE", "STATE", "#EYED"],
+  "clues": {
+    "across": {
+      "CART": "Grocery store pushable",
+      "OCEAN": "Pacific or Atlantic",
+      "PULSE": "Heartbeat you can feel at your wrist",
+      "STATE": "Say aloud, as an opinion",
+      "EYED": "Looked at carefully"
+    },
+    "down": {
+      "COPS": "Police, informally",
+      "ACUTE": "Less than 90 degrees, as an angle",
+      "RELAY": "Race with a baton",
+      "TASTE": "Sense used for sampling food",
+      "NEED": "Require"
+    }
+  }
+}
