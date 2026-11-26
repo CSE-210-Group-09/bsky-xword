@@ -7,7 +7,6 @@ interface CompletionModalProps {
   ranked: RankedFriend[];
   onViewLeaderboard: () => void;
   onClose: () => void;
-  onPlayAgain: () => void;
 }
 
 export function CompletionModal({
@@ -16,7 +15,6 @@ export function CompletionModal({
   ranked,
   onViewLeaderboard,
   onClose,
-  onPlayAgain,
 }: CompletionModalProps) {
   return (
     <div className="modal-overlay">
@@ -72,10 +70,7 @@ export function CompletionModal({
           </button>
           <button className="btn btn-secondary" onClick={onClose}>
             Inspect Grid
-          </button>
-          <button className="btn btn-secondary" onClick={onPlayAgain}>
-            Play Again (Reattempt)
-          </button>
+          </button>   
         </div>
       </div>
     </div>

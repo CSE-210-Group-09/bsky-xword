@@ -45,8 +45,7 @@ function Game({ user, locked, onLogout }: GameProps) {
   const [timerActive, setTimerActive] = useState(true);
   const timer = useTimer(timerActive && !locked);
 
-  // Stop the timer, freeze the first completion time (never overwritten on reattempt)
-  // and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
+  // Stop the timer, freeze the first completion time and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
   const handleComplete = (assisted: boolean) => {
     setTimerActive(false);
     setUserFirstScore((prev) => {
@@ -64,15 +63,7 @@ function Game({ user, locked, onLogout }: GameProps) {
     setActiveTab('clues');
     crossword.selectClue(clue, dir);
   };
-
-  // Reset grid for a reattempt (does NOT reset userFirstScore)
-  const handleReset = () => {
-    crossword.reset();
-    timer.reset();
-    setTimerActive(true);
-    setShowModal(false);
-  };
-
+  
   // Compute the Leaderboard ranking purely by elapsed time
   const leaderboard = useMemo(() => {
     const userEntry: Friend = { ...CURRENT_USER, timeSeconds: userFirstScore };
@@ -96,19 +87,18 @@ function Game({ user, locked, onLogout }: GameProps) {
             onCellClick={crossword.selectCell}
           />
 
-          {/* Quick testing controls */}
-          <div className="controls-bar">
-            <button className="btn btn-secondary" onClick={handleReset}>
-              Reset Puzzle
-            </button>
-            <button
-              className="btn btn-test"
-              onClick={crossword.autoFill}
-              title="Automatically fills the correct solution to test completion and leaderboard"
-            >
-              ⚡ Quick Fill (Test Solved)
-            </button>
-          </div>
+          {/* Dev-only testing control; stripped from production builds */}
+          {import.meta.env.DEV && (
+            <div className="controls-bar">
+              <button
+                className="btn btn-test"
+                onClick={crossword.autoFill}
+                title="Automatically fills the correct solution to test completion and leaderboard"
+              >
+                ⚡ Quick Fill (Test Solved)
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Side Panel with Tabs (Clues & Friends Leaderboard) */}
@@ -160,7 +150,6 @@ function Game({ user, locked, onLogout }: GameProps) {
             setActiveTab('leaderboard');
           }}
           onClose={() => setShowModal(false)}
-          onPlayAgain={handleReset}
         />
       )}
     </div>
