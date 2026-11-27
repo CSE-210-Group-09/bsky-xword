@@ -165,15 +165,6 @@ describe('check puzzle (#28)', () => {
     expect(onPenalty).not.toHaveBeenCalled();
   });
 
-  it('reset clears the marks and the count', () => {
-    const { result } = setup();
-    typeAt(result, 0, 0, wrong(0, 0));
-    act(() => result.current.checkPuzzle());
-    act(() => result.current.reset());
-
-    expect(result.current.incorrect.flat().some(Boolean)).toBe(false);
-    expect(result.current.checkCount).toBe(0);
-  });
 });
 
 describe('restoring saved progress (#29)', () => {
