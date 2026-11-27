@@ -35,6 +35,17 @@ test.describe('reveal square (#27)', () => {
 
     await expect(page.getByText('Puzzle Complete!')).toBeVisible();
   });
+
+  test('pressing Enter after a click does not reveal another square', async ({ page }) => {
+    await cell(page, 0, 0).click();
+    await page.getByRole('button', { name: 'Reveal square' }).click();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+
+    // Only the clicked reveal should count: the button must not keep keyboard focus.
+    await expect(cell(page, 0, 1)).not.toHaveClass(/revealed/);
+    expect(await timerSeconds(page)).toBeLessThan(20);
+  });
 });
 
 test.describe('check puzzle (#28)', () => {
