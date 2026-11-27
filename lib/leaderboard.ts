@@ -1,28 +1,23 @@
 import type { Friend, RankedFriend } from '../types';
 
-export interface Leaderboard {
-  /** Solvers sorted by time, fastest first. */
-  ranked: RankedFriend[];
-  /** Entries with no time yet. */
-  unranked: Friend[];
-}
-
-/** Ranks entries purely by time; tied times share the earlier rank. */
-export function rankLeaderboard(entries: Friend[]): Leaderboard {
-  const completed = entries
+/**
+ * Ranks solvers by time; tied times share the earlier rank (1, 1, 3).
+ * People who haven't solved are left out (ADR 0009).
+ * The server does the real ranking (#42), this is just for the mock data until #43.
+ */
+export function rankLeaderboard(entries: Friend[]): RankedFriend[] {
+  const solved = entries
     .filter((item): item is Friend & { timeSeconds: number } => item.timeSeconds !== null)
     .sort((a, b) => a.timeSeconds - b.timeSeconds);
 
-  const unranked = entries.filter((item) => item.timeSeconds === null);
-
   const ranked: RankedFriend[] = [];
-  completed.forEach((item, index) => {
+  solved.forEach((item, index) => {
     const prev = ranked[index - 1];
     const rank = prev && prev.timeSeconds === item.timeSeconds ? prev.rank : index + 1;
     ranked.push({ ...item, rank });
   });
 
-  return { ranked, unranked };
+  return ranked;
 }
 
 /** The current user's rank, or null if they have not solved yet. */

@@ -1,51 +1,56 @@
-import type { Friend, RankedFriend } from '../../types';
-import { formatTime } from '../../lib/format';
+import type { RankedFriend } from '../../types';
 import { LeaderboardRow } from './LeaderboardRow';
 
+export type LeaderboardStatus = 'loading' | 'ready' | 'error';
+
 interface LeaderboardPanelProps {
-  ranked: RankedFriend[];
-  unranked: Friend[];
-  userFirstScore: number | null;
-  currentUserRank: number | null;
+  /** Friend times stay hidden until the player finishes (ADR 0009). */
+  solved: boolean;
+  status: LeaderboardStatus;
+  /** Solvers only, fastest first. Same shape as the API entries. */
+  entries: RankedFriend[];
+  onRetry?: () => void;
 }
 
-export function LeaderboardPanel({ ranked, unranked, userFirstScore, currentUserRank }: LeaderboardPanelProps) {
+export function LeaderboardPanel({ solved, status, entries, onRetry }: LeaderboardPanelProps) {
+  if (!solved) {
+    return <p className="leaderboard-message">Solve the puzzle to see how your friends did</p>;
+  }
+
+  if (status === 'loading') {
+    return <p className="leaderboard-message">Loading leaderboard...</p>;
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="leaderboard-message">
+        <p>Couldn't load the leaderboard.</p>
+        {onRetry && (
+          <button className="btn btn-secondary" onClick={onRetry}>
+            Retry
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const nobodyElse = entries.every((e) => e.isCurrentUser);
+
   return (
     <div className="leaderboard-view">
       <div className="leaderboard-meta">
         <span>Bluesky Friends &bull; Today's Mini</span>
-        <span>{ranked.length} solved</span>
+        <span>{entries.length} solved</span>
       </div>
 
-      {userFirstScore !== null && (
-        <div className="leaderboard-notice">
-          <span>🏆</span>
-          <span>
-            You placed <strong>#{currentUserRank}</strong> with your first completion of{' '}
-            <strong>{formatTime(userFirstScore)}</strong>!
-          </span>
-        </div>
-      )}
-
-      {/* Ranked Solvers */}
       <ul className="leaderboard-list">
-        {ranked.map((friend) => (
+        {entries.map((friend) => (
           <LeaderboardRow key={friend.did} friend={friend} />
         ))}
       </ul>
 
-      {/* Friends yet to solve */}
-      {unranked.length > 0 && (
-        <div style={{ marginTop: '8px' }}>
-          <div className="leaderboard-meta" style={{ marginBottom: '6px' }}>
-            <span>In Progress / Not Yet Solved</span>
-          </div>
-          <ul className="leaderboard-list">
-            {unranked.map((friend) => (
-              <LeaderboardRow key={friend.did} friend={friend} />
-            ))}
-          </ul>
-        </div>
+      {nobodyElse && (
+        <p className="leaderboard-message">None of the people you follow have solved today's puzzle yet</p>
       )}
     </div>
   );

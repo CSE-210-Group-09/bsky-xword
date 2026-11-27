@@ -55,7 +55,7 @@ export function CompletionModal({
                   <span className="modal-lb-rank">
                     {item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : item.rank}
                   </span>
-                  <span>{item.displayName}</span>
+                  <span>{item.displayName || item.handle}</span>
                   {item.isCurrentUser && <span className="you-tag">YOU</span>}
                 </div>
                 <strong>{formatTime(item.timeSeconds)}</strong>
