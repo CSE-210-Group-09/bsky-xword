@@ -29,14 +29,12 @@ export interface Puzzle {
   clues: Record<Direction, Clue[]>;
 }
 
-/** A Bluesky user shown on the leaderboard. */
+/** A Bluesky user shown on the leaderboard. Same fields as a leaderboard API entry (#42), minus the rank. */
 export interface Friend {
-  id: string;
   did: string;
   handle: string;
-  displayName: string;
-  initials: string;
-  color: string;
+  displayName?: string;
+  avatar?: string;
   /** Seconds taken on the first completion; null if not yet solved. */
   timeSeconds: number | null;
   isCurrentUser?: boolean;

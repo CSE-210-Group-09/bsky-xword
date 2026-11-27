@@ -43,12 +43,12 @@ export default function App() {
     crossword.selectClue(clue, dir);
   };
   
-  // Compute the Leaderboard ranking purely by elapsed time
+  // Mock leaderboard in the same shape as the API, until #43 fetches the real one
   const leaderboard = useMemo(() => {
     const userEntry: Friend = { ...CURRENT_USER, timeSeconds: userFirstScore };
     return rankLeaderboard([...INITIAL_FRIENDS, userEntry]);
   }, [userFirstScore]);
-  const currentUserRank = getCurrentUserRank(leaderboard.ranked);
+  const currentUserRank = getCurrentUserRank(leaderboard);
 
   return (
     <div className="app-container">
@@ -108,12 +108,7 @@ export default function App() {
               />
             )}
             {activeTab === 'leaderboard' && (
-              <LeaderboardPanel
-                ranked={leaderboard.ranked}
-                unranked={leaderboard.unranked}
-                userFirstScore={userFirstScore}
-                currentUserRank={currentUserRank}
-              />
+              <LeaderboardPanel solved={userFirstScore !== null} status="ready" entries={leaderboard} />
             )}
           </div>
         </div>
@@ -123,7 +118,7 @@ export default function App() {
         <CompletionModal
           secondsElapsed={timer.secondsElapsed}
           currentUserRank={currentUserRank}
-          ranked={leaderboard.ranked}
+          ranked={leaderboard}
           onViewLeaderboard={() => {
             setShowModal(false);
             setActiveTab('leaderboard');
