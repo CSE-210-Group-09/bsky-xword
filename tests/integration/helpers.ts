@@ -1,11 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { expect, type Page } from '@playwright/test';
+import { parsePuzzle } from '../../lib/puzzles/parse';
+import type { Puzzle } from '../../types';
 
-// The app shows this fixture until today's puzzle is loaded from the API (#35);
-// after that, serve the same file through page.route('/api/puzzle/today').
+// The tests serve this fixture as today's puzzle through page.route, so they
+// don't depend on the date or on a puzzle file for today (#35).
 const puzzle = JSON.parse(readFileSync('puzzles/2026-11-18.json', 'utf8')) as { grid: string[] };
 
 export const PUZZLE_DATE = '2026-11-18';
+
+/** The fixture in the shape GET /api/puzzle/today returns. */
+export const servedPuzzle = (): Puzzle => parsePuzzle(puzzle, PUZZLE_DATE);
+
+/** Answer GET /api/puzzle/today with the given puzzle (the fixture by default). */
+export async function servePuzzle(page: Page, body: Puzzle = servedPuzzle()) {
+  await page.route('**/api/puzzle/today*', (route) => route.fulfill({ json: body }));
+}
 
 /** The correct letter at a cell, or '#' for a black square. */
 export const answer = (row: number, col: number) => puzzle.grid[row][col];
@@ -30,6 +40,7 @@ export async function timerSeconds(page: Page): Promise<number> {
 
 /** Open the app with no saved progress, logging in if the login gate (#32) is up. */
 export async function startFreshPuzzle(page: Page) {
+  await servePuzzle(page);
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
