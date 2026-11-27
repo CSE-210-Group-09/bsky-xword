@@ -98,6 +98,7 @@ export default function App() {
             </button>
             <button
               className="btn btn-secondary"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={crossword.checkPuzzle}
               disabled={crossword.isCompleted}
               title="Mark every wrong letter in the grid (+30s)"
