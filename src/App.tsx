@@ -142,6 +142,7 @@ function Game({ user, locked, onLogout }: GameProps) {
 
       {showModal && (
         <CompletionModal
+          puzzleDate={puzzle.date}
           secondsElapsed={timer.secondsElapsed}
           currentUserRank={currentUserRank}
           ranked={leaderboard.ranked}
