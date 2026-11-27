@@ -3,11 +3,12 @@ import type { AuthUser } from '../../types';
 
 interface HeaderProps {
   secondsElapsed: number;
+  recentPenalty?: number | null;
   user?: AuthUser;
   onLogout: () => void;
 }
 
-export function Header({ secondsElapsed, user, onLogout }: HeaderProps) {
+export function Header({ secondsElapsed, recentPenalty, user, onLogout }: HeaderProps) {
   return (
     <header className="header">
       <div className="brand">
@@ -21,6 +22,11 @@ export function Header({ secondsElapsed, user, onLogout }: HeaderProps) {
       <div className="timer-box">
         <span>⏱️</span>
         <span>{formatTime(secondsElapsed)}</span>
+        {recentPenalty != null && (
+          <span className="penalty-badge" data-testid="penalty-badge">
+            +{recentPenalty}s
+          </span>
+        )}
       </div>
 
       {user && (

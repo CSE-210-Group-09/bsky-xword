@@ -46,18 +46,24 @@ function Game({ user, locked, onLogout }: GameProps) {
   const timer = useTimer(timerActive && !locked);
 
   // Stop the timer, freeze the first completion time and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
+  // getTotalSeconds() includes a penalty from the same click, e.g. revealing the last square.
   const handleComplete = (assisted: boolean) => {
     setTimerActive(false);
+    const total = timer.getTotalSeconds();
     setUserFirstScore((prev) => {
       if (prev === null) {
-        return assisted && timer.secondsElapsed <= 0 ? 45 : timer.secondsElapsed;
+        return assisted && total <= 0 ? 45 : total;
       }
       return prev;
     });
     setShowModal(true);
   };
 
-  const crossword = useCrossword(puzzle, { disabled: showModal || locked, onComplete: handleComplete });
+  const crossword = useCrossword(puzzle, {
+    disabled: showModal || locked,
+    onComplete: handleComplete,
+    onPenalty: timer.addPenalty,
+  });
 
   const handleClueClick = (clue: Clue, dir: Direction) => {
     setActiveTab('clues');
@@ -73,7 +79,12 @@ function Game({ user, locked, onLogout }: GameProps) {
 
   return (
     <div className={`app-container ${locked ? 'app-locked' : ''}`} inert={locked}>
-      <Header secondsElapsed={timer.secondsElapsed} user={user} onLogout={onLogout} />
+      <Header
+        secondsElapsed={timer.displayedSeconds}
+        recentPenalty={timer.recentPenalty}
+        user={user}
+        onLogout={onLogout}
+      />
       <CurrentClueBar activeClue={crossword.activeClue} direction={crossword.direction} />
 
       <main className="puzzle-layout">
@@ -81,15 +92,38 @@ function Game({ user, locked, onLogout }: GameProps) {
           <Grid
             puzzle={puzzle}
             grid={crossword.grid}
+            revealed={crossword.revealed}
+            incorrect={crossword.incorrect}
             selectedCell={crossword.selectedCell}
             direction={crossword.direction}
             activeClue={crossword.activeClue}
             onCellClick={crossword.selectCell}
           />
 
-          {/* Dev-only testing control; stripped from production builds */}
-          {import.meta.env.DEV && (
-            <div className="controls-bar">
+          {/* Solving help (ADR 0008 penalties), plus a dev-only testing control */}
+          <div className="controls-bar">
+            {/* Penalty buttons don't take focus on click, so a later Enter keypress
+                can't trigger them again and charge the penalty twice. */}
+            <button
+              className="btn btn-secondary"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={crossword.revealCell}
+              disabled={crossword.isCompleted}
+              title="Fill the selected square with its answer (+10s)"
+            >
+              Reveal square
+            </button>
+            <button
+              className="btn btn-secondary"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={crossword.checkPuzzle}
+              disabled={crossword.isCompleted}
+              title="Mark every wrong letter in the grid (+30s)"
+            >
+              Check puzzle
+            </button>
+            {/* Stripped from production builds */}
+            {import.meta.env.DEV && (
               <button
                 className="btn btn-test"
                 onClick={crossword.autoFill}
@@ -97,8 +131,8 @@ function Game({ user, locked, onLogout }: GameProps) {
               >
                 ⚡ Quick Fill (Test Solved)
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Side Panel with Tabs (Clues & Friends Leaderboard) */}

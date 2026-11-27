@@ -5,24 +5,30 @@ import { Cell } from './Cell';
 interface GridProps {
   puzzle: Puzzle;
   grid: string[][];
+  revealed: boolean[][];
+  incorrect: boolean[][];
   selectedCell: CellPosition;
   direction: Direction;
   activeClue: Clue | undefined;
   onCellClick: (r: number, c: number) => void;
 }
 
-export function Grid({ puzzle, grid, selectedCell, direction, activeClue, onCellClick }: GridProps) {
+export function Grid({ puzzle, grid, revealed, incorrect, selectedCell, direction, activeClue, onCellClick }: GridProps) {
   return (
     <div className="grid">
       {grid.map((rowArr, r) =>
         rowArr.map((letter, c) => (
           <Cell
             key={`${r}-${c}`}
+            row={r}
+            col={c}
             letter={letter}
             number={puzzle.numbers[r][c]}
             black={isBlack(puzzle, r, c)}
             selected={selectedCell.row === r && selectedCell.col === c}
             highlighted={activeClue ? isCellInClue(activeClue, direction, r, c) : false}
+            revealed={revealed[r][c]}
+            incorrect={incorrect[r][c]}
             onClick={() => onCellClick(r, c)}
           />
         ))

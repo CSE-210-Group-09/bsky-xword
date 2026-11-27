@@ -3,7 +3,10 @@
   "compilerOptions": {
     "noEmit": true,
     "module": "ESNext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "types": ["node", "vite/client"]
   },
-  "include": ["tests", "server", "types/api.ts", "vitest.config.ts"]
+  "include": ["tests", "server", "types/api.ts", "vitest.config.ts", "playwright.config.ts"]
 }

@@ -84,6 +84,40 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: #1f2937;
+  position: relative;
+}
+
+.penalty-badge {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 12px;
+  animation: penaltyFade 1.5s ease-out forwards;
+  letter-spacing: 0.5px;
+}
+
+@keyframes penaltyFade {
+  0% {
+    transform: scale(0.7) translateY(2px);
+    opacity: 0;
+  }
+  15% {
+    transform: scale(1.1) translateY(0);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 .user-box {
@@ -229,6 +263,26 @@ body {
 
 .cell.selected {
   background-color: var(--cell-selected) !important;
+}
+
+/* Revealed squares get a corner triangle, as in most crossword apps */
+.cell.revealed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 14px 14px 0;
+  border-color: transparent #0085ff transparent transparent;
+}
+
+/* Wrong letters found by Check puzzle get a red slash until they are changed */
+.cell.incorrect::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top right, transparent calc(50% - 1.5px), #e0245e, transparent calc(50% + 1.5px));
+  pointer-events: none;
 }
 
 .cell-number {

@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1 supports Ubuntu 24.04; ubuntu-latest can move ahead of it.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,3 +26,7 @@ jobs:
       - run: npm run test:db --if-present
       - name: Validate puzzle files when the validator is available
         run: npm run validate-puzzles --if-present
+      - name: Install the Playwright browser
+        run: npx playwright install --with-deps --only-shell chromium
+      - run: npm run test:integration
+      - run: npm run test:e2e
