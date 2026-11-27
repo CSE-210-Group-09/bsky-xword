@@ -84,8 +84,11 @@ export default function App() {
 
           {/* Solving help (ADR 0008 penalties) and quick testing controls */}
           <div className="controls-bar">
+            {/* Penalty buttons don't take focus on click, so a later Enter keypress
+                can't trigger them again and charge the penalty twice. */}
             <button
               className="btn btn-secondary"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={crossword.revealCell}
               disabled={crossword.isCompleted}
               title="Fill the selected square with its answer (+10s)"
