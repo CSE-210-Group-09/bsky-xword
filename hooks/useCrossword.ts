@@ -176,18 +176,6 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
     onComplete(true);
   };
 
-  // Clear the grid for a reattempt
-  const reset = () => {
-    setGrid(emptyGrid(size));
-    setRevealed(emptyMarks(size));
-    setRevealCount(0);
-    setIncorrect(emptyMarks(size));
-    setCheckCount(0);
-    setIsCompleted(false);
-    setIsAssisted(false);
-    setSelectedCell({ row: 0, col: 0 });
-    setDirection('across');
-  };
 
   return {
     grid,
@@ -205,6 +193,5 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
     revealCell,
     checkPuzzle,
     autoFill,
-    reset,
   };
 }
