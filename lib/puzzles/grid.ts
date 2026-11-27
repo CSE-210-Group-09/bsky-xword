@@ -5,6 +5,11 @@ export function emptyGrid(size: number): string[][] {
   return Array(size).fill(null).map(() => Array(size).fill(''));
 }
 
+/** A size x size grid of false, for per-cell marks such as revealed cells. */
+export function emptyMarks(size: number): boolean[][] {
+  return Array(size).fill(null).map(() => Array(size).fill(false));
+}
+
 /** True for black squares and for anything outside the grid. */
 export function isBlack(puzzle: Puzzle, r: number, c: number): boolean {
   if (r < 0 || r >= puzzle.size || c < 0 || c >= puzzle.size) return true;

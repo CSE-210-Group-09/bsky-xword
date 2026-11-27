@@ -13,6 +13,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: 'http://localhost:3000',
+    // A missing control fails as an error rather than a test timeout, which
+    // test.fail does not count as the expected failure.
+    actionTimeout: 10_000,
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

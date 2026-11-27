@@ -183,6 +183,17 @@ body {
   background-color: var(--cell-selected) !important;
 }
 
+/* Revealed squares get a corner triangle, as in most crossword apps */
+.cell.revealed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 14px 14px 0;
+  border-color: transparent #0085ff transparent transparent;
+}
+
 .cell-number {
   position: absolute;
   top: 2px;

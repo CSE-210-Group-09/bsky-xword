@@ -26,18 +26,24 @@ export default function App() {
 
   // Stop the timer, freeze the first completion time (never overwritten on reattempt)
   // and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
+  // getTotalSeconds() includes a penalty from the same click, e.g. revealing the last square.
   const handleComplete = (assisted: boolean) => {
     setTimerActive(false);
+    const total = timer.getTotalSeconds();
     setUserFirstScore((prev) => {
       if (prev === null) {
-        return assisted && timer.secondsElapsed <= 0 ? 45 : timer.secondsElapsed;
+        return assisted && total <= 0 ? 45 : total;
       }
       return prev;
     });
     setShowModal(true);
   };
 
-  const crossword = useCrossword(puzzle, { disabled: showModal, onComplete: handleComplete });
+  const crossword = useCrossword(puzzle, {
+    disabled: showModal,
+    onComplete: handleComplete,
+    onPenalty: timer.addPenalty,
+  });
 
   const handleClueClick = (clue: Clue, dir: Direction) => {
     setActiveTab('clues');
@@ -69,14 +75,26 @@ export default function App() {
           <Grid
             puzzle={puzzle}
             grid={crossword.grid}
+            revealed={crossword.revealed}
             selectedCell={crossword.selectedCell}
             direction={crossword.direction}
             activeClue={crossword.activeClue}
             onCellClick={crossword.selectCell}
           />
 
-          {/* Quick testing controls */}
+          {/* Solving help (ADR 0008 penalties) and quick testing controls */}
           <div className="controls-bar">
+            {/* Penalty buttons don't take focus on click, so a later Enter keypress
+                can't trigger them again and charge the penalty twice. */}
+            <button
+              className="btn btn-secondary"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={crossword.revealCell}
+              disabled={crossword.isCompleted}
+              title="Fill the selected square with its answer (+10s)"
+            >
+              Reveal square
+            </button>
             <button className="btn btn-secondary" onClick={handleReset}>
               Reset Puzzle
             </button>
