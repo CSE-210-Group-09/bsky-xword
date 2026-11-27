@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import App from '../src/App';
+import { Game } from '../src/App';
 import { CURRENT_USER, INITIAL_FRIENDS } from '../lib/atproto/mockFriends';
 import { getCurrentUserRank, rankLeaderboard } from '../lib/leaderboard';
 import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
@@ -17,7 +17,7 @@ afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('finishing the puzzle with a reveal (#27)', () => {
   it('counts the final reveal penalty in the timer, the frozen score and the rank', () => {
-    const { container } = render(<App />);
+    const { container } = render(<Game puzzle={EASY_PUZZLE} />);
     const [last, ...rest] = [...whiteCells].reverse();
     for (const { row, col } of rest) {
       fireEvent.click(cellAt(container, row, col));

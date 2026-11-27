@@ -1,5 +1,5 @@
 import data from '../../puzzles/2026-11-18.json';
 import { parsePuzzle } from './parse';
 
-/** Static prototype fixture. The daily API will choose the file by Pacific date. */
+/** Fixture for tests. The app itself loads today's puzzle from /api/puzzle/today (#35). */
 export const EASY_PUZZLE = parsePuzzle(data, '2026-11-18');

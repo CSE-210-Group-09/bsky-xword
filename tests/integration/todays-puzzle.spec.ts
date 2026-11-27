@@ -7,7 +7,6 @@ const notFound = { status: 404, json: { error: { code: 'PUZZLE_NOT_FOUND', messa
 const serverError = { status: 500, json: { error: { code: 'INTERNAL_ERROR', message: 'boom' } } };
 
 test.describe('loading today\'s puzzle (#35)', () => {
-  test.fail(() => true, 'Written before #35; its PR deletes this line');
 
   test('shows a loading state, then the puzzle the server returned', async ({ page }) => {
     const puzzle = servedPuzzle();

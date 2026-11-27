@@ -663,3 +663,17 @@ body {
   flex-direction: column;
   gap: 8px;
 }
+
+/* Loading, no-puzzle and error screens before a puzzle is available (#35) */
+.puzzle-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+  padding: 24px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-muted);
+}
