@@ -10,6 +10,11 @@ export function emptyMarks(size: number): boolean[][] {
   return Array(size).fill(null).map(() => Array(size).fill(false));
 }
 
+/** A copy of the marks with one cell set to the value. */
+export function setMark(marks: boolean[][], r: number, c: number, value: boolean): boolean[][] {
+  return marks.map((rArr, rIdx) => rArr.map((val, cIdx) => (rIdx === r && cIdx === c ? value : val)));
+}
+
 /** True for black squares and for anything outside the grid. */
 export function isBlack(puzzle: Puzzle, r: number, c: number): boolean {
   if (r < 0 || r >= puzzle.size || c < 0 || c >= puzzle.size) return true;

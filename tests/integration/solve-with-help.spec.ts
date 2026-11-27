@@ -49,8 +49,6 @@ test.describe('reveal square (#27)', () => {
 });
 
 test.describe('check puzzle (#28)', () => {
-  test.fail(() => true, 'Written before #28; its PR deletes this line');
-
   test('marks only wrong letters, adds 30 seconds, and clears a mark on edit', async ({ page }) => {
     const wrong = answer(0, 0) === 'X' ? 'Y' : 'X';
     await typeAt(page, 0, 0, wrong);
@@ -64,6 +62,15 @@ test.describe('check puzzle (#28)', () => {
 
     await typeAt(page, 0, 0, answer(0, 0));
     await expect(cell(page, 0, 0)).not.toHaveClass(/incorrect/);
+  });
+
+  test('pressing Enter after a click does not run another check', async ({ page }) => {
+    await typeAt(page, 0, 0, answer(0, 0) === 'X' ? 'Y' : 'X');
+    await page.getByRole('button', { name: 'Check puzzle' }).click();
+    await page.keyboard.press('Enter');
+
+    // One click is one check: the button must not keep keyboard focus.
+    expect(await timerSeconds(page)).toBeLessThan(60);
   });
 });
 

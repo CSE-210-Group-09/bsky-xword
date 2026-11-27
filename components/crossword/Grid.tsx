@@ -6,13 +6,14 @@ interface GridProps {
   puzzle: Puzzle;
   grid: string[][];
   revealed: boolean[][];
+  incorrect: boolean[][];
   selectedCell: CellPosition;
   direction: Direction;
   activeClue: Clue | undefined;
   onCellClick: (r: number, c: number) => void;
 }
 
-export function Grid({ puzzle, grid, revealed, selectedCell, direction, activeClue, onCellClick }: GridProps) {
+export function Grid({ puzzle, grid, revealed, incorrect, selectedCell, direction, activeClue, onCellClick }: GridProps) {
   return (
     <div className="grid">
       {grid.map((rowArr, r) =>
@@ -27,6 +28,7 @@ export function Grid({ puzzle, grid, revealed, selectedCell, direction, activeCl
             selected={selectedCell.row === r && selectedCell.col === c}
             highlighted={activeClue ? isCellInClue(activeClue, direction, r, c) : false}
             revealed={revealed[r][c]}
+            incorrect={incorrect[r][c]}
             onClick={() => onCellClick(r, c)}
           />
         ))
