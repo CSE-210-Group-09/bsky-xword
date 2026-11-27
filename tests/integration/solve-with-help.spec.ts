@@ -63,6 +63,15 @@ test.describe('check puzzle (#28)', () => {
     await typeAt(page, 0, 0, answer(0, 0));
     await expect(cell(page, 0, 0)).not.toHaveClass(/incorrect/);
   });
+
+  test('pressing Enter after a click does not run another check', async ({ page }) => {
+    await typeAt(page, 0, 0, answer(0, 0) === 'X' ? 'Y' : 'X');
+    await page.getByRole('button', { name: 'Check puzzle' }).click();
+    await page.keyboard.press('Enter');
+
+    // One click is one check: the button must not keep keyboard focus.
+    expect(await timerSeconds(page)).toBeLessThan(60);
+  });
 });
 
 test.describe('saved progress (#29)', () => {
