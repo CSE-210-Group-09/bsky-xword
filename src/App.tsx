@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import type { Clue, Direction, Friend, Tab } from '../types';
-import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
+import type { Clue, Direction, Friend, Puzzle, Tab } from '../types';
+import { useTodayPuzzle } from '../hooks/useTodayPuzzle';
 import { INITIAL_FRIENDS, CURRENT_USER } from '../lib/atproto/mockFriends';
 import { getCurrentUserRank, rankLeaderboard } from '../lib/leaderboard';
 import { useCrossword } from '../hooks/useCrossword';
@@ -12,8 +12,32 @@ import { CluesPanel } from '../components/crossword/CluesPanel';
 import { LeaderboardPanel } from '../components/leaderboard/LeaderboardPanel';
 import { CompletionModal } from '../components/modals/CompletionModal';
 
+/** Loads today's puzzle from the server (ADR 0007), then hands it to the game. */
 export default function App() {
-  const puzzle = EASY_PUZZLE;
+  const today = useTodayPuzzle();
+
+  if (today.status === 'ready' && today.puzzle) return <Game puzzle={today.puzzle} />;
+
+  return (
+    <div className="app-container">
+      <div className="puzzle-status" role={today.status === 'error' ? 'alert' : 'status'}>
+        {today.status === 'loading' && <p>Loading today's puzzle...</p>}
+        {today.status === 'missing' && <p>No puzzle today, check back later.</p>}
+        {today.status === 'error' && (
+          <>
+            <p>Couldn't load today's puzzle. Check your connection and try again.</p>
+            <button className="btn btn-primary" onClick={today.retry}>
+              Retry
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** One play of a puzzle. Rendered only once the puzzle has loaded. */
+export function Game({ puzzle }: { puzzle: Puzzle }) {
 
   const [showModal, setShowModal] = useState(false);
   // Active side panel tab: 'clues' or 'leaderboard'
