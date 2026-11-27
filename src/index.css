@@ -42,6 +42,8 @@ body {
 /* Header */
 .header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: space-between;
   align-items: center;
   background: var(--card-bg);
@@ -116,6 +118,86 @@ body {
     opacity: 0;
     transform: translateY(-4px);
   }
+}
+
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-handle {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Login gate */
+.app-locked {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.login-gate {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: none;
+}
+
+.login-card {
+  max-width: 380px;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.login-card label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.login-card .btn {
+  padding: 10px 14px;
+}
+
+.login-card .btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.login-error {
+  font-size: 13px;
+  color: #c0362c;
+}
+
+.login-notice {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
 }
 
 /* Current Clue Bar */
@@ -656,6 +738,25 @@ body {
   font-weight: 800;
   width: 18px;
   color: #6b7280;
+}
+
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.share-actions .btn {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.share-error {
+  width: 100%;
+  font-size: 13px;
+  color: #c0362c;
 }
 
 .modal-actions {
