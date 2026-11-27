@@ -94,6 +94,25 @@ describe('saved progress (#29)', () => {
     }
   });
 
+  it('never overwrites a finished puzzle with an unfinished one', () => {
+    // A second tab that loaded before the first one finished keeps saving its
+    // own stale state every second (reported on #65).
+    const storage = memoryStorage();
+    const finished = { ...saved, completed: true, finalSeconds: 95 };
+    saveProgress(finished, storage);
+    saveProgress(saved, storage);
+
+    expect(loadProgress(EASY_PUZZLE, storage)).toEqual(finished);
+  });
+
+  it('still updates a finished save with another finished one', () => {
+    const storage = memoryStorage();
+    saveProgress({ ...saved, completed: true, finalSeconds: 95 }, storage);
+    saveProgress({ ...saved, completed: true, finalSeconds: 95, elapsedSeconds: 60 }, storage);
+
+    expect(loadProgress(EASY_PUZZLE, storage)?.elapsedSeconds).toBe(60);
+  });
+
   it('carries on when storage is full', () => {
     const full = memoryStorage();
     full.setItem = () => { throw new DOMException('full', 'QuotaExceededError'); };
