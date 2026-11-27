@@ -35,6 +35,17 @@ test.describe('reveal square (#27)', () => {
 
     await expect(page.getByText('Puzzle Complete!')).toBeVisible();
   });
+
+  test('pressing Enter after a click does not reveal another square', async ({ page }) => {
+    await cell(page, 0, 0).click();
+    await page.getByRole('button', { name: 'Reveal square' }).click();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+
+    // Only the clicked reveal should count: the button must not keep keyboard focus.
+    await expect(cell(page, 0, 1)).not.toHaveClass(/revealed/);
+    expect(await timerSeconds(page)).toBeLessThan(20);
+  });
 });
 
 test.describe('check puzzle (#28)', () => {
@@ -51,6 +62,15 @@ test.describe('check puzzle (#28)', () => {
 
     await typeAt(page, 0, 0, answer(0, 0));
     await expect(cell(page, 0, 0)).not.toHaveClass(/incorrect/);
+  });
+
+  test('pressing Enter after a click does not run another check', async ({ page }) => {
+    await typeAt(page, 0, 0, answer(0, 0) === 'X' ? 'Y' : 'X');
+    await page.getByRole('button', { name: 'Check puzzle' }).click();
+    await page.keyboard.press('Enter');
+
+    // One click is one check: the button must not keep keyboard focus.
+    expect(await timerSeconds(page)).toBeLessThan(60);
   });
 });
 
