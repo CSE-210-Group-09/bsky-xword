@@ -25,3 +25,4 @@ format from [Michael Nygard's ADRs](https://cognitect.com/blog/2011/11/15/docume
 | [0008](0008-gameplay-rules.md) | Gameplay rules: progress, attempts, and penalties | Accepted |
 | [0009](0009-friends-leaderboard.md) | Friends leaderboard composition | Accepted |
 | [0010](0010-share-format.md) | Share format | Accepted |
+| [0011](0011-browser-oauth-client.md) | Run the Bluesky OAuth client in the browser | Proposed |

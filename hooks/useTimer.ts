@@ -14,7 +14,5 @@ export function useTimer(running: boolean) {
     return () => clearInterval(interval);
   }, [running]);
 
-  const reset = () => setSecondsElapsed(0);
-
-  return { secondsElapsed, reset };
+  return { secondsElapsed };
 }

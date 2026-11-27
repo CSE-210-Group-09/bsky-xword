@@ -1,22 +1,23 @@
 import type { RankedFriend } from '../../types';
 import { formatTime } from '../../lib/format';
+import { ShareButtons } from './ShareButtons';
 
 interface CompletionModalProps {
+  puzzleDate: string;
   secondsElapsed: number;
   currentUserRank: number | null;
   ranked: RankedFriend[];
   onViewLeaderboard: () => void;
   onClose: () => void;
-  onPlayAgain: () => void;
 }
 
 export function CompletionModal({
+  puzzleDate,
   secondsElapsed,
   currentUserRank,
   ranked,
   onViewLeaderboard,
   onClose,
-  onPlayAgain,
 }: CompletionModalProps) {
   return (
     <div className="modal-overlay">
@@ -66,16 +67,15 @@ export function CompletionModal({
           </div>
         </div>
 
+        <ShareButtons date={puzzleDate} timeSeconds={secondsElapsed} rank={currentUserRank} />
+
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={onViewLeaderboard}>
             View Friends Leaderboard Tab
           </button>
           <button className="btn btn-secondary" onClick={onClose}>
             Inspect Grid
-          </button>
-          <button className="btn btn-secondary" onClick={onPlayAgain}>
-            Play Again (Reattempt)
-          </button>
+          </button>   
         </div>
       </div>
     </div>
