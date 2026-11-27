@@ -46,12 +46,28 @@ export function loadProgress(puzzle: Puzzle, storage = browserStorage()): SavedP
   }
 }
 
-/** Save progress; does nothing when storage is blocked or full. */
+/**
+ * Save progress; does nothing when storage is blocked or full. A finished
+ * puzzle is never replaced by an unfinished one, so a stale second tab cannot
+ * undo a completion (ADR 0008: one attempt).
+ */
 export function saveProgress(progress: SavedProgress, storage = browserStorage()): void {
   try {
-    storage?.setItem(progressKey(progress.date), JSON.stringify(progress));
+    if (!storage) return;
+    if (!progress.completed && isFinishedSave(storage.getItem(progressKey(progress.date)))) return;
+    storage.setItem(progressKey(progress.date), JSON.stringify(progress));
   } catch {
     // Playing on without saving is better than failing the game.
+  }
+}
+
+/** True when a stored value is a readable save of a finished puzzle. */
+function isFinishedSave(raw: string | null): boolean {
+  if (!raw) return false;
+  try {
+    return JSON.parse(raw)?.completed === true;
+  } catch {
+    return false;
   }
 }
 

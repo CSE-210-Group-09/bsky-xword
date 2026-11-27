@@ -113,6 +113,13 @@ describe('saved progress (#29)', () => {
     expect(loadProgress(EASY_PUZZLE, storage)?.elapsedSeconds).toBe(60);
   });
 
+  it('replaces a corrupt save instead of giving up on saving', () => {
+    const storage = memoryStorage({ [progressKey(EASY_PUZZLE.date)]: '{not json' });
+    saveProgress(saved, storage);
+
+    expect(loadProgress(EASY_PUZZLE, storage)).toEqual(saved);
+  });
+
   it('carries on when storage is full', () => {
     const full = memoryStorage();
     full.setItem = () => { throw new DOMException('full', 'QuotaExceededError'); };
