@@ -13,11 +13,20 @@ const cellAt = (container: HTMLElement, row: number, col: number) =>
   container.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`) as HTMLElement;
 
 beforeEach(() => { vi.useFakeTimers(); });
+
+/** Get past the login gate (#32), as a player would. */
+async function logIn(handle = 'tester.bsky.social') {
+  fireEvent.change(screen.getByLabelText('Bluesky handle'), { target: { value: handle } });
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Log in with Bluesky' }));
+  });
+}
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('finishing the puzzle with a reveal (#27)', () => {
-  it('counts the final reveal penalty in the timer, the frozen score and the rank', () => {
+  it('counts the final reveal penalty in the timer, the frozen score and the rank', async () => {
     const { container } = render(<App />);
+    await logIn();
     const [last, ...rest] = [...whiteCells].reverse();
     for (const { row, col } of rest) {
       fireEvent.click(cellAt(container, row, col));

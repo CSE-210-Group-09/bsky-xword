@@ -3,6 +3,7 @@ import path from 'node:path';
 export interface ServerConfig {
   port: number;
   dbPath: string;
+  appViewUrl: string;
   publicUrl: string;
   production: boolean;
 }
@@ -19,6 +20,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   return {
     port,
     dbPath: path.resolve(env.DB_PATH ?? 'data/local.db'),
+    appViewUrl: new URL(env.APPVIEW_URL ?? 'https://public.api.bsky.app').origin,
     publicUrl: publicUrl.origin,
     production: env.NODE_ENV === 'production',
   };

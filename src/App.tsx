@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
-import type { Clue, Direction, Friend, Tab } from '../types';
+import type { AuthUser, Clue, Direction, Friend, Tab } from '../types';
 import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
 import { INITIAL_FRIENDS, CURRENT_USER } from '../lib/atproto/mockFriends';
 import { getCurrentUserRank, rankLeaderboard } from '../lib/leaderboard';
 import { useCrossword } from '../hooks/useCrossword';
 import { useTimer } from '../hooks/useTimer';
+import { useAuth } from '../hooks/useAuth';
 import { Header } from '../components/layout/Header';
+import { LoginGate } from '../components/layout/LoginGate';
 import { CurrentClueBar } from '../components/crossword/CurrentClueBar';
 import { Grid } from '../components/crossword/Grid';
 import { CluesPanel } from '../components/crossword/CluesPanel';
@@ -13,6 +15,25 @@ import { LeaderboardPanel } from '../components/leaderboard/LeaderboardPanel';
 import { CompletionModal } from '../components/modals/CompletionModal';
 
 export default function App() {
+  const auth = useAuth();
+  const locked = auth.status !== 'signed-in';
+
+  return (
+    <>
+      {/* key resets the grid and timer so the next account doesn't inherit them */}
+      <Game key={auth.user?.did ?? 'signed-out'} user={auth.user} locked={locked} onLogout={auth.logout} />
+      {locked && <LoginGate status={auth.status} onLogin={auth.login} />}
+    </>
+  );
+}
+
+interface GameProps {
+  user?: AuthUser;
+  locked: boolean;
+  onLogout: () => void;
+}
+
+function Game({ user, locked, onLogout }: GameProps) {
   const puzzle = EASY_PUZZLE;
 
   const [showModal, setShowModal] = useState(false);
@@ -22,7 +43,7 @@ export default function App() {
   const [userFirstScore, setUserFirstScore] = useState<number | null>(null);
 
   const [timerActive, setTimerActive] = useState(true);
-  const timer = useTimer(timerActive);
+  const timer = useTimer(timerActive && !locked);
 
   // Stop the timer, freeze the first completion time and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
   // getTotalSeconds() includes a penalty from the same click, e.g. revealing the last square.
@@ -39,7 +60,7 @@ export default function App() {
   };
 
   const crossword = useCrossword(puzzle, {
-    disabled: showModal,
+    disabled: showModal || locked,
     onComplete: handleComplete,
     onPenalty: timer.addPenalty,
   });
@@ -57,8 +78,13 @@ export default function App() {
   const currentUserRank = getCurrentUserRank(leaderboard.ranked);
 
   return (
-    <div className="app-container">
-      <Header secondsElapsed={timer.displayedSeconds} recentPenalty={timer.recentPenalty} />
+    <div className={`app-container ${locked ? 'app-locked' : ''}`} inert={locked}>
+      <Header
+        secondsElapsed={timer.displayedSeconds}
+        recentPenalty={timer.recentPenalty}
+        user={user}
+        onLogout={onLogout}
+      />
       <CurrentClueBar activeClue={crossword.activeClue} direction={crossword.direction} />
 
       <main className="puzzle-layout">
@@ -150,6 +176,7 @@ export default function App() {
 
       {showModal && (
         <CompletionModal
+          puzzleDate={puzzle.date}
           secondsElapsed={timer.secondsElapsed}
           currentUserRank={currentUserRank}
           ranked={leaderboard.ranked}

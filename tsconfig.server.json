@@ -14,7 +14,9 @@
   },
   "include": [
     "server",
-    "types/api.ts",
-    "lib/db"
+    "types",
+    "lib/db",
+    "lib/atproto/appview.ts",
+    "lib/puzzles/parse.ts"
   ]
 }

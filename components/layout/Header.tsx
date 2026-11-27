@@ -1,11 +1,14 @@
 import { formatTime } from '../../lib/format';
+import type { AuthUser } from '../../types';
 
 interface HeaderProps {
   secondsElapsed: number;
   recentPenalty?: number | null;
+  user?: AuthUser;
+  onLogout: () => void;
 }
 
-export function Header({ secondsElapsed, recentPenalty }: HeaderProps) {
+export function Header({ secondsElapsed, recentPenalty, user, onLogout }: HeaderProps) {
   return (
     <header className="header">
       <div className="brand">
@@ -25,6 +28,16 @@ export function Header({ secondsElapsed, recentPenalty }: HeaderProps) {
           </span>
         )}
       </div>
+
+      {user && (
+        <div className="user-box">
+          {user.avatar && <img className="user-avatar" src={user.avatar} alt="" />}
+          <span className="user-handle">@{user.handle}</span>
+          <button className="btn btn-secondary" onClick={onLogout}>
+            Log out
+          </button>
+        </div>
+      )}
     </header>
   );
 }

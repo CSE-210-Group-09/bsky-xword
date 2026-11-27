@@ -42,6 +42,15 @@ export interface Friend {
   isCurrentUser?: boolean;
 }
 
+export type AuthStatus = 'loading' | 'signed-out' | 'signed-in';
+
+export interface AuthUser {
+  did: string;
+  handle: string;
+  displayName?: string;
+  avatar?: string;
+}
+
 /** A friend who has solved the puzzle, with their leaderboard position. */
 export interface RankedFriend extends Friend {
   timeSeconds: number;
