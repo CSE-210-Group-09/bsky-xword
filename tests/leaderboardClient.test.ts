@@ -14,7 +14,7 @@ const respond = (status: number, body: unknown) =>
 
 describe('fetchLeaderboard (#43)', () => {
   it('asks for the player\'s DID and the date, and returns the entries', async () => {
-    const fetcher = vi.fn(() => respond(200, { date: '2026-11-18', entries }));
+    const fetcher = vi.fn((_url: string) => respond(200, { date: '2026-11-18', entries }));
     await expect(fetchLeaderboard(PLAYER, '2026-11-18', fetcher)).resolves.toEqual({ status: 'ready', entries });
     const url = new URL(fetcher.mock.calls[0][0], 'http://x');
     expect(url.pathname).toBe('/api/leaderboard');
