@@ -3,6 +3,7 @@ import type { CellPosition, Clue, Direction, Puzzle } from '../types';
 import {
   emptyGrid, emptyMarks, findActiveClue, isBlack, isSolved, nextCell, prevCell, setMark,
 } from '../lib/puzzles/grid';
+import type { SavedProgress } from '../lib/puzzles/progress';
 import { CHECK_PENALTY_SECONDS, REVEAL_PENALTY_SECONDS } from './useTimer';
 
 interface Options {
@@ -12,28 +13,30 @@ interface Options {
   onComplete: (assisted: boolean) => void;
   /** Called with the seconds to add when the player reveals a square or checks the puzzle. */
   onPenalty?: (seconds: number) => void;
+  /** Saved state to start from instead of an empty grid (ADR 0013). */
+  initial?: Pick<SavedProgress, 'grid' | 'revealed' | 'incorrect' | 'revealCount' | 'checkCount' | 'completed'>;
 }
 
 /** Grid state, selection, direction, keyboard handling and completion detection. */
-export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }: Options) {
+export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty, initial }: Options) {
   const size = puzzle.size;
 
   // Grid state: size x size array of strings (empty string for unfilled)
-  const [grid, setGrid] = useState<string[][]>(() => emptyGrid(size));
+  const [grid, setGrid] = useState<string[][]>(() => initial?.grid ?? emptyGrid(size));
 
   // Selected cell & direction
   const [selectedCell, setSelectedCell] = useState<CellPosition>({ row: 0, col: 0 });
   const [direction, setDirection] = useState<Direction>('across');
 
   // Revealed cells show their answer and can't be changed (ADR 0008: +10s each)
-  const [revealed, setRevealed] = useState<boolean[][]>(() => emptyMarks(size));
-  const [revealCount, setRevealCount] = useState(0);
+  const [revealed, setRevealed] = useState<boolean[][]>(() => initial?.revealed ?? emptyMarks(size));
+  const [revealCount, setRevealCount] = useState(initial?.revealCount ?? 0);
 
   // Wrong letters found by the last check (ADR 0008: +30s per check); a mark clears on edit
-  const [incorrect, setIncorrect] = useState<boolean[][]>(() => emptyMarks(size));
-  const [checkCount, setCheckCount] = useState(0);
+  const [incorrect, setIncorrect] = useState<boolean[][]>(() => initial?.incorrect ?? emptyMarks(size));
+  const [checkCount, setCheckCount] = useState(initial?.checkCount ?? 0);
 
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(initial?.completed ?? false);
   // Not read yet; reserved for marking assisted solves on the leaderboard.
   const [isAssisted, setIsAssisted] = useState(false);
 
@@ -72,6 +75,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
         setDirection((prev) => (prev === 'across' ? 'down' : 'across'));
       } else if (e.key === 'Backspace') {
         e.preventDefault();
+        if (isCompleted) return; // one attempt (ADR 0008): a finished grid is locked
         const currentLetter = grid[row][col];
         if (revealed[row][col]) {
           setSelectedCell(prevCell(puzzle, selectedCell, direction));
@@ -96,6 +100,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
         }
       } else if (/^[a-zA-Z]$/.test(e.key)) {
         e.preventDefault();
+        if (isCompleted) return;
         if (revealed[row][col]) {
           setSelectedCell(nextCell(puzzle, selectedCell, direction));
           return;
@@ -119,7 +124,7 @@ export function useCrossword(puzzle: Puzzle, { disabled, onComplete, onPenalty }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [puzzle, selectedCell, direction, grid, revealed, incorrect, size, disabled, onComplete]);
+  }, [puzzle, selectedCell, direction, grid, revealed, incorrect, isCompleted, size, disabled, onComplete]);
 
   // Cell click: select it, or toggle direction if already selected
   const selectCell = (r: number, c: number) => {

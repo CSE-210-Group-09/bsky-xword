@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { AuthUser, Clue, Direction, Friend, Tab } from '../types';
 import { EASY_PUZZLE } from '../lib/puzzles/puzzleData';
+import { clearStaleProgress, loadProgress, PROGRESS_VERSION, saveProgress } from '../lib/puzzles/progress';
 import { INITIAL_FRIENDS, CURRENT_USER } from '../lib/atproto/mockFriends';
 import { getCurrentUserRank, rankLeaderboard } from '../lib/leaderboard';
 import { useCrossword } from '../hooks/useCrossword';
@@ -36,14 +37,27 @@ interface GameProps {
 function Game({ user, locked, onLogout }: GameProps) {
   const puzzle = EASY_PUZZLE;
 
+  // The player's saved progress for today's puzzle (ADR 0013), read once before the first
+  // render so the grid and timer start where they left off. Nothing is loaded behind the
+  // login gate; Game remounts with the account's key once the player signs in.
+  const [saved] = useState(() => {
+    if (!user) return null;
+    clearStaleProgress(puzzle.date);
+    return loadProgress(puzzle, user.did);
+  });
+
   const [showModal, setShowModal] = useState(false);
   // Active side panel tab: 'clues' or 'leaderboard'
   const [activeTab, setActiveTab] = useState<Tab>('clues');
-  // Frozen first completion score (purely in-memory, resets on browser refresh)
-  const [userFirstScore, setUserFirstScore] = useState<number | null>(null);
+  // Frozen first completion score, saved with the rest of the progress
+  const [userFirstScore, setUserFirstScore] = useState<number | null>(saved?.finalSeconds ?? null);
 
-  const [timerActive, setTimerActive] = useState(true);
-  const timer = useTimer(timerActive && !locked);
+  const [timerActive, setTimerActive] = useState(!saved?.completed);
+  const timer = useTimer({
+    running: timerActive && !locked,
+    initialElapsed: saved?.elapsedSeconds,
+    initialPenalties: saved?.penaltySeconds,
+  });
 
   // Stop the timer, freeze the first completion time and show the modal. Auto-fill falls back to 45s if the timer has not ticked yet.
   // getTotalSeconds() includes a penalty from the same click, e.g. revealing the last square.
@@ -63,7 +77,31 @@ function Game({ user, locked, onLogout }: GameProps) {
     disabled: showModal || locked,
     onComplete: handleComplete,
     onPenalty: timer.addPenalty,
+    initial: saved ?? undefined,
   });
+
+  // Save on every change, including each timer tick (about 10-20 µs a write, ADR 0013).
+  // Nothing is saved behind the login gate.
+  useEffect(() => {
+    if (!user) return;
+    saveProgress({
+      version: PROGRESS_VERSION,
+      date: puzzle.date,
+      did: user.did,
+      grid: crossword.grid,
+      revealed: crossword.revealed,
+      incorrect: crossword.incorrect,
+      elapsedSeconds: timer.elapsedSeconds,
+      penaltySeconds: timer.penaltySeconds,
+      revealCount: crossword.revealCount,
+      checkCount: crossword.checkCount,
+      completed: crossword.isCompleted,
+      finalSeconds: userFirstScore,
+    });
+  }, [
+    user, puzzle.date, crossword.grid, crossword.revealed, crossword.incorrect, timer.elapsedSeconds,
+    timer.penaltySeconds, crossword.revealCount, crossword.checkCount, crossword.isCompleted, userFirstScore,
+  ]);
 
   const handleClueClick = (clue: Clue, dir: Direction) => {
     setActiveTab('clues');

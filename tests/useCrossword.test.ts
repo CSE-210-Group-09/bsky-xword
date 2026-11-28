@@ -166,3 +166,56 @@ describe('check puzzle (#28)', () => {
   });
 
 });
+
+describe('restoring saved progress (#29)', () => {
+  const marks = () => EASY_PUZZLE.solution.map((line) => line.map(() => false));
+  const restored = (completed: boolean) => {
+    const grid = EASY_PUZZLE.solution.map((line) => line.map((l) => (l === '#' ? '' : completed ? l : '')));
+    if (!completed) grid[0][0] = answer(0, 0) === 'X' ? 'Y' : 'X';
+    const revealed = marks();
+    revealed[0][1] = true;
+    grid[0][1] = answer(0, 1);
+    const incorrect = marks();
+    incorrect[0][0] = !completed;
+    return { grid, revealed, incorrect, revealCount: 1, checkCount: 1, completed };
+  };
+
+  it('starts from the saved grid, marks and counts', () => {
+    const initial = restored(false);
+    const { result } = renderHook(() =>
+      useCrossword(EASY_PUZZLE, { disabled: false, onComplete: vi.fn(), initial }));
+
+    expect(result.current.grid).toEqual(initial.grid);
+    expect(result.current.revealed).toEqual(initial.revealed);
+    expect(result.current.incorrect).toEqual(initial.incorrect);
+    expect(result.current.revealCount).toBe(1);
+    expect(result.current.checkCount).toBe(1);
+    expect(result.current.isCompleted).toBe(false);
+  });
+
+  it('restores a finished puzzle as finished, without calling onComplete again', () => {
+    const onComplete = vi.fn();
+    const { result } = renderHook(() =>
+      useCrossword(EASY_PUZZLE, { disabled: false, onComplete, initial: restored(true) }));
+
+    expect(result.current.isCompleted).toBe(true);
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+});
+
+describe('a finished grid is locked (ADR 0008: one attempt)', () => {
+  it('ignores typing and deleting after completion', () => {
+    const { result } = setup();
+    for (const { row, col } of whiteCells) {
+      act(() => result.current.selectCell(row, col));
+      press(answer(row, col));
+    }
+    expect(result.current.isCompleted).toBe(true);
+
+    act(() => result.current.selectCell(0, 1));
+    act(() => result.current.selectCell(0, 0));
+    press(answer(0, 0) === 'X' ? 'Y' : 'X');
+    press('Backspace');
+    expect(result.current.grid[0][0]).toBe(answer(0, 0));
+  });
+});

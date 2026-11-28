@@ -50,3 +50,82 @@ describe('finishing the puzzle with a reveal (#27)', () => {
     expect(notice.textContent).toContain(`#${expectedRank}`);
   });
 });
+
+describe('saved progress (#29)', () => {
+  const did = 'did:plc:mock-tester.bsky.social';
+  const key = `bsky-xword:progress:${EASY_PUZZLE.date}:${did}`;
+  const marks = () => EASY_PUZZLE.solution.map((line) => line.map(() => false));
+  const progress = (overrides: Record<string, unknown>) => ({
+    version: 2,
+    date: EASY_PUZZLE.date,
+    did,
+    grid: EASY_PUZZLE.solution.map((line) => line.map(() => '')),
+    revealed: marks(),
+    incorrect: marks(),
+    elapsedSeconds: 0,
+    penaltySeconds: 0,
+    revealCount: 0,
+    checkCount: 0,
+    completed: false,
+    finalSeconds: null,
+    ...overrides,
+  });
+
+  beforeEach(() => localStorage.clear());
+
+  it('saves letters as they are typed', async () => {
+    const { container } = render(<App />);
+    await logIn();
+    fireEvent.click(cellAt(container, 0, 0));
+    fireEvent.keyDown(window, { key: 'q' });
+
+    expect(JSON.parse(localStorage.getItem(key)!).grid[0][0]).toBe('Q');
+  });
+
+  it('picks up a solve in progress where it left off', async () => {
+    const grid = EASY_PUZZLE.solution.map((line) => line.map(() => ''));
+    grid[1][0] = EASY_PUZZLE.solution[1][0];
+    grid[0][0] = EASY_PUZZLE.solution[0][0];
+    const revealed = marks();
+    revealed[0][0] = true;
+    localStorage.setItem(key, JSON.stringify(progress({
+      grid, revealed, elapsedSeconds: 65, penaltySeconds: 10, revealCount: 1,
+    })));
+    const { container } = render(<App />);
+    await logIn();
+
+    expect(cellAt(container, 1, 0).textContent).toContain(EASY_PUZZLE.solution[1][0]);
+    expect(cellAt(container, 0, 0).className).toContain('revealed');
+    expect(container.querySelector('.timer-box')?.textContent).toContain('1:15');
+  });
+
+  it('shows a finished puzzle as finished: time frozen, leaderboard available', async () => {
+    const grid = EASY_PUZZLE.solution.map((line) => line.map((l) => (l === '#' ? '' : l)));
+    localStorage.setItem(key, JSON.stringify(progress({
+      grid, elapsedSeconds: 80, penaltySeconds: 30, checkCount: 1, completed: true, finalSeconds: 110,
+    })));
+    const { container } = render(<App />);
+    await logIn();
+    act(() => { vi.advanceTimersByTime(3000); });
+
+    expect(container.querySelector('.timer-box')?.textContent).toContain('1:50');
+    fireEvent.click(screen.getByRole('button', { name: /Friends Leaderboard/ }));
+    expect(container.querySelector('.leaderboard-notice')?.textContent).toContain('first completion of 1:50');
+  });
+
+  it('neither loads nor saves progress while signed out', async () => {
+    localStorage.setItem(key, JSON.stringify(progress({ elapsedSeconds: 80 })));
+    const { container } = render(<App />);
+
+    expect(container.querySelector('.timer-box')?.textContent).toContain('0:00');
+    expect(Object.keys(localStorage)).toEqual([key]);
+  });
+
+  it('clears progress saved for an earlier puzzle', async () => {
+    localStorage.setItem('bsky-xword:progress:2026-11-01', JSON.stringify(progress({ date: '2026-11-01' })));
+    render(<App />);
+    await logIn();
+
+    expect(localStorage.getItem('bsky-xword:progress:2026-11-01')).toBeNull();
+  });
+});

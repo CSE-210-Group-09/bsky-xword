@@ -75,8 +75,6 @@ test.describe('check puzzle (#28)', () => {
 });
 
 test.describe('saved progress (#29)', () => {
-  test.fail(() => true, 'Written before #29; its PR deletes this line');
-
   test('a refresh mid-solve keeps letters, revealed cells, time and penalties', async ({ page }) => {
     await typeAt(page, 1, 0, answer(1, 0));
     await cell(page, 0, 0).click();
