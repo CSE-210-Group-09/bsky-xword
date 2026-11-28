@@ -1,0 +1,22 @@
+{
+  "id": "mini-2026-11-25",
+  "title": "Shire Thing",
+  "author": "Anirudh Sriram",
+  "grid": ["#SLAP", "PHOTO", "AISLE", "TREAT", "HERS#"],
+  "clues": {
+    "across": {
+      "SLAP": "Smack with an open hand",
+      "PHOTO": "Selfie, for one",
+      "AISLE": "Wedding walkway",
+      "TREAT": "Halloween handout",
+      "HERS": "Not his"
+    },
+    "down": {
+      "PATH": "Trail through the woods",
+      "SHIRE": "Where hobbits live, with \"the\"",
+      "LOSER": "Last-place finisher",
+      "ATLAS": "Book of maps",
+      "POET": "Verse writer"
+    }
+  }
+}
