@@ -37,11 +37,13 @@ interface GameProps {
 function Game({ user, locked, onLogout }: GameProps) {
   const puzzle = EASY_PUZZLE;
 
-  // Progress saved in this browser for today's puzzle (ADR 0013), read once before the
-  // first render so the grid and timer start where the player left off.
+  // The player's saved progress for today's puzzle (ADR 0013), read once before the first
+  // render so the grid and timer start where they left off. Nothing is loaded behind the
+  // login gate; Game remounts with the account's key once the player signs in.
   const [saved] = useState(() => {
+    if (!user) return null;
     clearStaleProgress(puzzle.date);
-    return loadProgress(puzzle);
+    return loadProgress(puzzle, user.did);
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -78,11 +80,14 @@ function Game({ user, locked, onLogout }: GameProps) {
     initial: saved ?? undefined,
   });
 
-  // Save on every change, including each timer tick (about 10-20 µs a write, ADR 0013)
+  // Save on every change, including each timer tick (about 10-20 µs a write, ADR 0013).
+  // Nothing is saved behind the login gate.
   useEffect(() => {
+    if (!user) return;
     saveProgress({
       version: PROGRESS_VERSION,
       date: puzzle.date,
+      did: user.did,
       grid: crossword.grid,
       revealed: crossword.revealed,
       incorrect: crossword.incorrect,
@@ -94,7 +99,7 @@ function Game({ user, locked, onLogout }: GameProps) {
       finalSeconds: userFirstScore,
     });
   }, [
-    puzzle.date, crossword.grid, crossword.revealed, crossword.incorrect, timer.elapsedSeconds,
+    user, puzzle.date, crossword.grid, crossword.revealed, crossword.incorrect, timer.elapsedSeconds,
     timer.penaltySeconds, crossword.revealCount, crossword.checkCount, crossword.isCompleted, userFirstScore,
   ]);
 

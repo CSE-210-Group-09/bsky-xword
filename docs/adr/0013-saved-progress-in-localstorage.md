@@ -34,7 +34,7 @@ Measured on 2026-11-23 in headless Chromium (Playwright 1.56.1). The progress ob
 
 ## Decision
 
-- Save progress in **`localStorage`** under `bsky-xword:progress:<puzzle date>`, as JSON with a `version: 1` field.
+- Save progress in **`localStorage`** under `bsky-xword:progress:<puzzle date>:<player DID>`, as JSON with a `version: 2` field and the DID inside it. Two accounts in one browser keep separate saves, and nothing is loaded or saved while the login gate is up. (Version 1 had no DID; such saves are ignored.)
 - Read it **synchronously before the first render**, with lazy `useState` initializers, so the grid and timer start from the saved state. Save again whenever the saved fields change, including on each timer tick.
 - **Validate** before restoring: the version and date must match, and the grids must match the puzzle size with the right types. Anything else is ignored as if nothing was saved.
 - On load, **remove progress keys for other dates**. Other keys are left alone.
@@ -51,7 +51,3 @@ Why not the others:
 - Progress stays in one browser. Switching devices mid-solve starts over, as [0008](0008-gameplay-rules.md) already accepts. A finished result still follows the user through the repo record ([0005](0005-results-as-atproto-records.md)).
 - Clearing site data, or a browser evicting it, restarts the puzzle. That is acceptable under [0006](0006-trust-client-reported-results.md).
 - Changing the saved shape means bumping `version`. Old saves are then ignored rather than migrated, which loses at most one day's progress.
-
-## Open questions
-
-- The key has no user in it, because login (#32) is not on main yet. Once it lands, should the key include the player's DID, so two accounts in one browser don't share progress?

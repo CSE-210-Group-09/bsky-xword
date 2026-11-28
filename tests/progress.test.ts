@@ -49,12 +49,12 @@ describe('saved progress (#29)', () => {
     const storage = memoryStorage();
     saveProgress(saved, storage);
     expect(loadProgress(EASY_PUZZLE, 'did:plc:bob', storage)).toBeNull();
-    expect(loadProgress(EASY_PUZZLE, DID, DID, storage)).toEqual(saved);
+    expect(loadProgress(EASY_PUZZLE, DID, storage)).toEqual(saved);
   });
 
   it('ignores a save that names a different account than its key', () => {
     const storage = memoryStorage({ [progressKey(EASY_PUZZLE.date, DID)]: JSON.stringify({ ...saved, did: 'did:plc:bob' }) });
-    expect(loadProgress(EASY_PUZZLE, DID, DID, storage)).toBeNull();
+    expect(loadProgress(EASY_PUZZLE, DID, storage)).toBeNull();
   });
 
   it('loads what it saved', () => {
